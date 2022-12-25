@@ -1,20 +1,25 @@
 package main
 
 import (
+	"bytes"
 	"github.com/skhoroshavin/automap/internal"
 	"log"
 	"os"
 )
 
 func main() {
-	file, err := os.Create("automap_gen.go")
+	buf := bytes.Buffer{}
+	err := internal.AutoMap(&buf, "")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = internal.AutoMap(file, "")
+	file, err := os.Create("automap_gen.go")
 	if err != nil {
-		_ = os.Remove("automap_gen.go")
+		log.Fatalln(err)
+	}
+	_, err = file.Write(buf.Bytes())
+	if err != nil {
 		log.Fatalln(err)
 	}
 
