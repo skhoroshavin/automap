@@ -1,5 +1,7 @@
 package core
 
+// TODO: Implement expressions so that actual code formatting could be moved to writer
+
 // FuncBody represents function body
 type FuncBody struct {
 	// Vars is a list of variable assignments
