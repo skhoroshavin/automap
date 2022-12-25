@@ -1,6 +1,6 @@
 # Automap: Automated mapping generation in Go
 
-[![ci](https://github.com/skhoroshavin/automap/actions/workflows/ci.yaml/badge.svg)](https://github.com/skhoroshavin/automap/actions/workflows/ci.yaml)
+[![ci](https://github.com/skhoroshavin/automap/actions/workflows/ci.yaml/badge.svg?branch=main&event=push)](https://github.com/skhoroshavin/automap/actions/workflows/ci.yaml)
 
 **THIS PROJECT IS IN PROOF OF CONCEPT STAGE AND IS DEFINITELY 
 NOT SUITABLE FOR USE IN PRODUCTION**
