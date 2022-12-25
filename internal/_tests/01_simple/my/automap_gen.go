@@ -10,7 +10,28 @@ import (
 	"automap/internal/_tests/01_simple/external"
 )
 
-func MapUserName(user *external.User) *UserName {
+func ValueToValue(user external.User) UserName {
+	return UserName{
+		FirstName: user.FirstName,
+		LastName: user.LastName,
+	}
+}
+
+func ValueToPtr(user external.User) *UserName {
+	return &UserName{
+		FirstName: user.FirstName,
+		LastName: user.LastName,
+	}
+}
+
+func PtrToValue(user *external.User) UserName {
+	return UserName{
+		FirstName: user.FirstName,
+		LastName: user.LastName,
+	}
+}
+
+func PtrToPtr(user *external.User) *UserName {
 	return &UserName{
 		FirstName: user.FirstName,
 		LastName: user.LastName,

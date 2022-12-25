@@ -1,27 +1,27 @@
 package writer
 
 import (
-	"automap/internal/utils"
+	"fmt"
 	"io"
 )
 
-func writeImports(out io.StringWriter, imports []string) (err error) {
+func writeImports(out io.Writer, imports []string) (err error) {
 	if len(imports) == 0 {
 		return
 	}
 
-	err = utils.WriteLn(out, "\nimport (")
+	_, err = fmt.Fprintln(out, "\nimport (")
 	if err != nil {
 		return
 	}
 
 	for _, s := range imports {
-		err = utils.WriteLn(out, "\t%s", s)
+		_, err = fmt.Fprintf(out, "\t%s\n", s)
 		if err != nil {
 			return
 		}
 	}
 
-	err = utils.WriteLn(out, ")")
+	_, err = fmt.Fprintln(out, ")")
 	return
 }

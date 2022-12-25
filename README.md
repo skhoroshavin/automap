@@ -20,7 +20,7 @@ This tool is heavily inspired by:
 ## Features
 
 * [x] Automatic mapping of fields with same name
-* [ ] Handling value and pointer types
+* [x] Handling value and pointer types
 * [ ] Using getter methods
 * [ ] Automatic flattening
 * [ ] Slices and maps

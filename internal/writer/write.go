@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-func Write(out io.StringWriter, reg *mapper.Registry) (err error) {
+func Write(out io.Writer, reg *mapper.Registry) (err error) {
 	err = writeHeader(out, reg.Package())
 	if err != nil {
 		return

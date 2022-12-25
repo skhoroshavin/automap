@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-func AutoMap(out io.StringWriter, dir string) error {
+func AutoMap(out io.Writer, dir string) error {
 	parseRes, err := parser.Parse(dir)
 	if err != nil {
 		return err

@@ -7,6 +7,18 @@ import (
 	"automap/internal/_tests/01_simple/external"
 )
 
-func MapUserName(user *external.User) *UserName {
+func ValueToValue(user external.User) UserName {
+	panic(automap.Build())
+}
+
+func ValueToPtr(user external.User) *UserName {
+	panic(automap.Build())
+}
+
+func PtrToValue(user *external.User) UserName {
+	panic(automap.Build())
+}
+
+func PtrToPtr(user *external.User) *UserName {
 	panic(automap.Build())
 }
