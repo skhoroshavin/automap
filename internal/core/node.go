@@ -1,16 +1,12 @@
 package core
 
-import (
-	"strings"
-)
-
 type Node interface {
-	Build(fn *FuncBody, indent int) string
+	Build(fn *FuncBody) Expr
 }
 
 func BuildFuncBody(node Node) *FuncBody {
 	res := new(FuncBody)
-	res.Result = node.Build(res, 1)
+	res.Result = node.Build(res)
 	return res
 }
 
@@ -19,12 +15,12 @@ type NamedNode struct {
 	Value Node
 }
 
-type ExprNode struct {
+type ValueNode struct {
 	Value string
 }
 
-func (n *ExprNode) Build(_ *FuncBody, _ int) string {
-	return n.Value
+func (n *ValueNode) Build(_ *FuncBody) Expr {
+	return &ValueExpr{Value: n.Value}
 }
 
 type StructNode struct {
@@ -33,23 +29,19 @@ type StructNode struct {
 	IsPointer bool
 }
 
-func (n *StructNode) Build(fn *FuncBody, indent int) string {
-	s := strings.Builder{}
-	if n.IsPointer {
-		s.WriteString("&")
+func (n *StructNode) Build(fn *FuncBody) Expr {
+	res := &StructExpr{
+		Name:      n.Name,
+		IsPointer: n.IsPointer,
+		Fields:    make([]FieldExpr, len(n.Fields)),
 	}
-	s.WriteString(n.Name)
-	s.WriteString("{\n")
-	for _, field := range n.Fields {
-		writeIndent(&s, indent+1)
-		s.WriteString(field.Name)
-		s.WriteString(": ")
-		s.WriteString(field.Value.Build(fn, indent+1))
-		s.WriteString(",\n")
+
+	for i, field := range n.Fields {
+		res.Fields[i].Name = field.Name
+		res.Fields[i].Value = field.Value.Build(fn)
 	}
-	writeIndent(&s, indent)
-	s.WriteString("}")
-	return s.String()
+
+	return res
 }
 
 type FuncNode struct {
@@ -57,10 +49,4 @@ type FuncNode struct {
 
 	FuncName string
 	Inputs   []Node
-}
-
-func writeIndent(s *strings.Builder, indent int) {
-	for i := 0; i != indent; i++ {
-		s.WriteString("\t")
-	}
 }

@@ -7,18 +7,38 @@ import (
 	"io"
 )
 
-func writeFunc(out io.Writer, fn *core.FuncBody) error {
-	if fn.Result == "" {
+func writeFunc(out io.Writer, fn *core.FuncBody) (err error) {
+	if fn.Result == nil {
 		return errors.New("function has empty return statement")
 	}
 
 	for _, v := range fn.Vars {
-		_, err := fmt.Fprintf(out, "\t%s := %s\n", v.Name, v.Value)
+		_, err = fmt.Fprintf(out, "\t%s := ", v.Name)
 		if err != nil {
-			return err
+			return
+		}
+
+		err = writeExpr(out, v.Value, 1)
+		if err != nil {
+			return
+		}
+
+		_, err = fmt.Fprintln(out)
+		if err != nil {
+			return
 		}
 	}
 
-	_, err := fmt.Fprintf(out, "\treturn %s\n", fn.Result)
-	return err
+	_, err = fmt.Fprint(out, "\treturn ")
+	if err != nil {
+		return
+	}
+
+	err = writeExpr(out, fn.Result, 1)
+	if err != nil {
+		return
+	}
+
+	_, err = fmt.Fprintln(out)
+	return
 }

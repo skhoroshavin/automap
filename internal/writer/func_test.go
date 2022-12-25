@@ -27,7 +27,7 @@ func (s *WriteFuncSuite) TestWriteEmptyFuncFails() {
 
 func (s *WriteFuncSuite) TestWriteFuncWithSingleResultCreatesSingleReturnStatement() {
 	err := writeFunc(s.out, &core.FuncBody{
-		Result: "42",
+		Result: &core.ValueExpr{Value: "42"},
 	})
 	s.Assert().NoError(err)
 	s.Assert().Equal("\treturn 42\n", s.out.String())
@@ -36,7 +36,7 @@ func (s *WriteFuncSuite) TestWriteFuncWithSingleResultCreatesSingleReturnStateme
 func (s *WriteFuncSuite) TestWriteFuncWithoutResultFails() {
 	err := writeFunc(s.out, &core.FuncBody{
 		Vars: []core.Variable{
-			{Name: "tmp", Value: "42"},
+			{Name: "tmp", Value: &core.ValueExpr{Value: "42"}},
 		},
 	})
 	s.Assert().Error(err)
@@ -45,10 +45,10 @@ func (s *WriteFuncSuite) TestWriteFuncWithoutResultFails() {
 func (s *WriteFuncSuite) TestWriteFuncWithVariablesCreatesThemInOrderThenReturnStatement() {
 	err := writeFunc(s.out, &core.FuncBody{
 		Vars: []core.Variable{
-			{Name: "a", Value: "20"},
-			{Name: "b", Value: "a + 2"},
+			{Name: "a", Value: &core.ValueExpr{Value: "20"}},
+			{Name: "b", Value: &core.ValueExpr{Value: "a + 2"}},
 		},
-		Result: "a + b",
+		Result: &core.ValueExpr{Value: "a + b"},
 	})
 	s.Assert().NoError(err)
 
@@ -56,6 +56,38 @@ func (s *WriteFuncSuite) TestWriteFuncWithVariablesCreatesThemInOrderThenReturnS
 		`	a := 20
 	b := a + 2
 	return a + b
+`
+	s.Assert().Equal(expected, s.out.String())
+}
+
+func (s *WriteFuncSuite) TestWriteFuncHandlesComplexExpressions() {
+	err := writeFunc(s.out, &core.FuncBody{
+		Vars: []core.Variable{
+			{Name: "answer", Value: &core.StructExpr{
+				Name:      "Answer",
+				IsPointer: true,
+				Fields: []core.FieldExpr{
+					{Name: "Value", Value: &core.ValueExpr{Value: "42"}},
+				},
+			}},
+		},
+		Result: &core.StructExpr{
+			Name: "Question",
+			Fields: []core.FieldExpr{
+				{Name: "Value", Value: &core.ValueExpr{Value: "\"wtf\""}},
+				{Name: "Answer", Value: &core.ValueExpr{Value: "answer"}},
+			},
+		},
+	})
+	s.Assert().NoError(err)
+
+	expected := `	answer := &Answer{
+		Value: 42,
+	}
+	return Question{
+		Value: "wtf",
+		Answer: answer,
+	}
 `
 	s.Assert().Equal(expected, s.out.String())
 }
