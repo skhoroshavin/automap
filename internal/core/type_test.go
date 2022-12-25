@@ -51,3 +51,34 @@ func (s *StructSuite) TestArgsMapping() {
 		},
 	}, mapper)
 }
+
+func (s *StructSuite) TestSimpleStructMapping() {
+	target := &StructType{
+		Name: "Answer",
+		Fields: []Provider{
+			{Name: "Value", Type: "string"},
+			{Name: "Question", Type: "string"},
+		},
+		Getters: []Provider{},
+	}
+	source := &StructType{
+		Name: "core.Answer",
+		Fields: []Provider{
+			{Name: "Value", Type: "string"},
+			{Name: "Question", Type: "string"},
+			{Name: "Reason", Type: "string"},
+		},
+		Getters: []Provider{},
+	}
+	mapper := target.BuildMapper([]Provider{
+		{Name: "v", Type: source.Name},
+	})
+
+	s.Assert().Equal(&StructNode{
+		Name: "Answer",
+		Fields: []NamedNode{
+			{Name: "Value", Value: &ValueNode{Value: "v.Value"}},
+			{Name: "Question", Value: &ValueNode{Value: "v.Question"}},
+		},
+	}, mapper)
+}
