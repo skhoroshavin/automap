@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"automap/internal/utils"
 	"fmt"
+	"github.com/skhoroshavin/automap/internal/utils"
 	"go/ast"
 	"go/types"
 )

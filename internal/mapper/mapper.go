@@ -1,7 +1,7 @@
 package mapper
 
 import (
-	"automap/internal/parser"
+	"github.com/skhoroshavin/automap/internal/parser"
 	"go/types"
 )
 

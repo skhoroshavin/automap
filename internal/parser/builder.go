@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"automap/internal/utils"
+	"github.com/skhoroshavin/automap/internal/utils"
 	"go/ast"
 )
 

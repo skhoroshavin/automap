@@ -1,9 +1,9 @@
 package internal
 
 import (
-	"automap/internal/mapper"
-	"automap/internal/parser"
-	"automap/internal/writer"
+	"github.com/skhoroshavin/automap/internal/mapper"
+	"github.com/skhoroshavin/automap/internal/parser"
+	"github.com/skhoroshavin/automap/internal/writer"
 	"io"
 )
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"automap/internal"
+	"github.com/skhoroshavin/automap/internal"
 	"log"
 	"os"
 )

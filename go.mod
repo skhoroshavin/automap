@@ -1,4 +1,4 @@
-module automap
+module github.com/skhoroshavin/automap
 
 go 1.19
 

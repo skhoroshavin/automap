@@ -1,7 +1,7 @@
 package mapper
 
 import (
-	"automap/internal/parser"
+	"github.com/skhoroshavin/automap/internal/parser"
 )
 
 func New(parseResults *parser.Result) (res *Registry, err error) {

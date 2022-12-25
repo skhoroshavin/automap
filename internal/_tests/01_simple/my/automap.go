@@ -3,8 +3,8 @@
 package my
 
 import (
-	"automap"
-	"automap/internal/_tests/01_simple/external"
+	"github.com/skhoroshavin/automap"
+	"github.com/skhoroshavin/automap/internal/_tests/01_simple/external"
 )
 
 func ValueToValue(user external.User) UserName {

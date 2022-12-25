@@ -1,8 +1,8 @@
 package writer
 
 import (
-	"automap/internal/mapper"
 	"fmt"
+	"github.com/skhoroshavin/automap/internal/mapper"
 	"io"
 )
 
