@@ -17,20 +17,6 @@ This tool is heavily inspired by:
 * [AutoMapper](https://github.com/AutoMapper/AutoMapper): 
   convention-based object-object mapper in .NET
 
-## Features
-
-* [x] Automatic mapping of fields with same name
-* [x] Handling value and pointer types
-* [x] Using getter methods
-* [ ] Automatic flattening
-* [ ] Slices and maps
-* [ ] Constructors
-* [ ] Configuring custom mappings for individual fields
-* [ ] Using mappers for nested fields
-* [ ] Handling mappers with multiple arguments
-* [ ] Handling "mappers" with zero arguments
-* [ ] Error handling
-
 ## Installing
 
 Install AutoMap by running:
