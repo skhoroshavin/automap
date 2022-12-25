@@ -21,7 +21,7 @@ This tool is heavily inspired by:
 
 * [x] Automatic mapping of fields with same name
 * [x] Handling value and pointer types
-* [ ] Using getter methods
+* [x] Using getter methods
 * [ ] Automatic flattening
 * [ ] Slices and maps
 * [ ] Constructors

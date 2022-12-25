@@ -35,7 +35,7 @@ func writeMapper(out io.Writer, mapper *mapper.Mapper) (err error) {
 		toField := mapper.ToType.Struct.Field(i)
 		accessor := mapper.FromType.FindAccessor(toField.Name(), toField.Type())
 		if accessor == "" {
-			return fmt.Errorf("cannot map field %s", toField.String())
+			return fmt.Errorf("cannot map %s", toField.String())
 		}
 		_, err = fmt.Fprintf(out, "\t\t%s: %s.%s,\n", toField.Name(), mapper.FromName, accessor)
 		if err != nil {

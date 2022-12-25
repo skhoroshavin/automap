@@ -61,5 +61,26 @@ func (t *Type) FindAccessor(name string, typ types.Type) string {
 		return f.Name()
 	}
 
+	for i := 0; i != t.Named.NumMethods(); i++ {
+		m := t.Named.Method(i)
+		if m.Name() != name {
+			continue
+		}
+		sig, ok := m.Type().(*types.Signature)
+		if !ok {
+			continue
+		}
+		if sig.Params().Len() != 0 {
+			continue
+		}
+		if sig.Results().Len() != 1 {
+			continue
+		}
+		if sig.Results().At(0).Type() != typ {
+			continue
+		}
+		return fmt.Sprintf("%s()", m.Name())
+	}
+
 	return ""
 }
