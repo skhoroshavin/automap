@@ -2,85 +2,74 @@ package mapper
 
 import (
 	"fmt"
+	"github.com/skhoroshavin/automap/internal/core"
 	"github.com/skhoroshavin/automap/internal/utils"
 	"go/ast"
 	"go/types"
 )
 
-func NewType(typeExpr ast.Expr, typeInfo *types.Info) (res *Type, err error) {
-	res = new(Type)
+func ParseType(typeExpr ast.Expr, typeInfo *types.Info) (core.Type, error) {
+	isPointer := false
 
 	// Dereference pointer if needed
 	if starExpr, ok := typeExpr.(*ast.StarExpr); ok {
-		res.IsPointer = true
+		isPointer = true
 		typeExpr = starExpr.X
 	}
 
 	// Name
-	res.Name = utils.AST2String(typeExpr)
+	name := utils.AST2String(typeExpr)
 
 	// Get type
 	typ := typeInfo.TypeOf(typeExpr)
 	if typ == nil {
-		err = fmt.Errorf("unknown type %s", res.Name)
-		return
+		return nil, fmt.Errorf("unknown type %s", name)
 	}
 
 	var ok bool
-	res.Named, ok = typ.(*types.Named)
+	namedType, ok := typ.(*types.Named)
 	if !ok {
-		err = fmt.Errorf("type %s is not named", res.Name)
-		return
+		return &core.OpaqueType{Name_: name}, nil
 	}
 
-	res.Struct, ok = res.Named.Underlying().(*types.Struct)
+	structType, ok := namedType.Underlying().(*types.Struct)
 	if !ok {
-		err = fmt.Errorf("type %s is not struct", res.Name)
-		return
+		return &core.OpaqueType{Name_: name}, nil
 	}
 
-	return
-}
-
-type Type struct {
-	Name      string
-	Named     *types.Named
-	Struct    *types.Struct
-	IsPointer bool
-}
-
-func (t *Type) FindAccessor(name string, typ types.Type) string {
-	for i := 0; i != t.Struct.NumFields(); i++ {
-		f := t.Struct.Field(i)
-		if f.Name() != name {
-			continue
-		}
-		if f.Type() != typ {
-			continue
-		}
-		return f.Name()
+	res := &core.StructType{
+		Name_:      name,
+		IsPointer_: isPointer,
+		Fields:     make(core.ProviderList, 0, structType.NumFields()),
+		Getters:    make(core.ProviderList, 0, namedType.NumMethods()),
 	}
-
-	for i := 0; i != t.Named.NumMethods(); i++ {
-		m := t.Named.Method(i)
-		if m.Name() != name {
+	for i := 0; i != structType.NumFields(); i++ {
+		field := structType.Field(i)
+		if !field.Exported() {
 			continue
 		}
-		sig, ok := m.Type().(*types.Signature)
+		res.Fields = append(res.Fields, core.Provider{
+			Name: field.Name(),
+			Type: &core.OpaqueType{Name_: field.Type().String()},
+		})
+	}
+	for i := 0; i != namedType.NumMethods(); i++ {
+		method := namedType.Method(i)
+		sig, ok := method.Type().(*types.Signature)
 		if !ok {
-			continue
-		}
-		if sig.Params().Len() != 0 {
 			continue
 		}
 		if sig.Results().Len() != 1 {
 			continue
 		}
-		if sig.Results().At(0).Type() != typ {
+		if sig.Params().Len() != 0 {
 			continue
 		}
-		return fmt.Sprintf("%s()", m.Name())
+		res.Getters = append(res.Getters, core.Provider{
+			Name: method.Name(),
+			Type: &core.OpaqueType{Name_: sig.Results().At(0).Type().String()},
+		})
 	}
 
-	return ""
+	return res, nil
 }
