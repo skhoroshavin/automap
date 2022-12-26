@@ -1,25 +1,51 @@
 package parser
 
 import (
-	"github.com/skhoroshavin/automap/internal/utils"
+	"fmt"
 	"go/ast"
 	"strings"
 )
 
-type Imports map[string]struct{}
+type Imports map[string]string
 
-func newImports() Imports {
+func NewImports() Imports {
 	return make(Imports)
 }
 
-func mergeImports(imports Imports, file *ast.File) {
+func (m Imports) ParseFile(file *ast.File) {
 	for _, spec := range file.Imports {
-		if spec.Path.Value == `"automap"` {
-			continue
-		}
-		if strings.HasSuffix(spec.Path.Value, `/automap"`) {
-			continue
-		}
-		imports[utils.AST2String(spec)] = struct{}{}
+		m.ParseImport(spec)
 	}
+}
+
+func (m Imports) ParseImport(spec *ast.ImportSpec) {
+	path := strings.ReplaceAll(spec.Path.Value, "\"", "")
+
+	var name string
+	if spec.Name != nil {
+		name = spec.Name.Name
+	} else {
+		name = parsePackageName(path)
+	}
+
+	if name == "automap" {
+		return
+	}
+
+	m[path] = name
+}
+
+func (m Imports) ToList() []string {
+	res := make([]string, 0, len(m))
+	for path, name := range m {
+		isUnnamed := (path == name) ||
+			strings.HasSuffix(path, fmt.Sprintf("/%s", name))
+
+		if isUnnamed {
+			res = append(res, fmt.Sprintf(`"%s"`, path))
+		} else {
+			res = append(res, fmt.Sprintf(`%s "%s"`, name, path))
+		}
+	}
+	return res
 }

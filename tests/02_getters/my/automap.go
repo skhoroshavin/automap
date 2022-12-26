@@ -4,7 +4,7 @@ package my
 
 import (
 	"github.com/skhoroshavin/automap"
-	"github.com/skhoroshavin/automap/internal/_tests/02_getters/external"
+	"github.com/skhoroshavin/automap/tests/02_getters/external"
 )
 
 func ValueToValue(user external.User) UserName {

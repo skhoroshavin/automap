@@ -1,7 +1,8 @@
-package internal
+package tests
 
 import (
 	"bytes"
+	"github.com/skhoroshavin/automap/internal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -11,9 +12,7 @@ import (
 )
 
 func Test(t *testing.T) {
-	testsPath := "_tests"
-
-	tests, err := os.ReadDir(testsPath)
+	tests, err := os.ReadDir(".")
 	require.NoError(t, err)
 
 	for _, item := range tests {
@@ -22,10 +21,10 @@ func Test(t *testing.T) {
 		}
 
 		t.Run(item.Name(), func(t *testing.T) {
-			testDir := path.Join(testsPath, item.Name(), "my")
+			testDir := path.Join(item.Name(), "my")
 
 			buf := bytes.Buffer{}
-			err := AutoMap(&buf, testDir)
+			err := internal.AutoMap(&buf, testDir)
 			require.NoError(t, err)
 
 			expectedFile, err := os.Open(path.Join(testDir, "automap_gen.go"))

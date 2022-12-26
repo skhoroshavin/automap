@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"github.com/skhoroshavin/automap/internal/utils"
 	"go/ast"
 )
 
@@ -20,7 +19,7 @@ func findBuilderExpr(fun *ast.FuncDecl) *ast.CallExpr {
 	if !ok {
 		return nil
 	}
-	if utils.AST2String(panicCall.Fun) != "panic" {
+	if nodeToString(panicCall.Fun) != "panic" {
 		return nil
 	}
 	if len(panicCall.Args) != 1 {
@@ -32,7 +31,7 @@ func findBuilderExpr(fun *ast.FuncDecl) *ast.CallExpr {
 	if !ok {
 		return nil
 	}
-	if utils.AST2String(buildCall.Fun) != "automap.Build" {
+	if nodeToString(buildCall.Fun) != "automap.Build" {
 		return nil
 	}
 

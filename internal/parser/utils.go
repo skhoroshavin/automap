@@ -1,4 +1,4 @@
-package utils
+package parser
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"go/token"
 )
 
-func AST2String(expr ast.Node) string {
+func nodeToString(expr ast.Node) string {
 	buf := bytes.Buffer{}
 	fset := token.NewFileSet()
 	err := printer.Fprint(&buf, fset, expr)

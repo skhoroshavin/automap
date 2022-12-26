@@ -9,40 +9,36 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func Parse(dir string) (pkgCfg *mapper.PackageConfig, err error) {
-	pkgCfg = new(mapper.PackageConfig)
-
-	pkg, err := load(dir)
+func Parse(dir string) (*mapper.PackageConfig, error) {
+	gopkg, err := load(dir)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	imports := newImports()
+	pkg := ParsePackage(gopkg)
+	imports := NewImports()
+	var allMappers []*mapper.Config
 
-	for _, file := range pkg.Syntax {
-		mappers := findMappers(file, pkg.TypesInfo)
+	for _, file := range gopkg.Syntax {
+		imports.ParseFile(file)
+
+		mappers := findMappers(file, gopkg.TypesInfo, pkg, imports)
 		if len(mappers) == 0 {
 			continue
 		}
 
-		if pkgCfg.Name != "" {
-			if pkgCfg.Name != file.Name.Name {
-				err = fmt.Errorf("expected package %s, but got %s", pkgCfg.Name, file.Name.Name)
-			}
+		if file.Name.Name != pkg.Name {
+			return nil, fmt.Errorf("expected package %s, but got %s", pkg.Name, file.Name.Name)
 		}
-		pkgCfg.Name = file.Name.Name
 
-		mergeImports(imports, file)
-
-		pkgCfg.Mappers = append(pkgCfg.Mappers, mappers...)
+		allMappers = append(allMappers, mappers...)
 	}
 
-	pkgCfg.Imports = make([]string, 0, len(imports))
-	for v := range imports {
-		pkgCfg.Imports = append(pkgCfg.Imports, v)
-	}
-
-	return
+	return &mapper.PackageConfig{
+		Name:    pkg.Name,
+		Imports: imports.ToList(),
+		Mappers: allMappers,
+	}, nil
 }
 
 func load(dir string) (res *packages.Package, err error) {
@@ -71,7 +67,7 @@ func load(dir string) (res *packages.Package, err error) {
 	return
 }
 
-func findMappers(file *ast.File, typeInfo *types.Info) (res []*mapper.Config) {
+func findMappers(file *ast.File, typeInfo *types.Info, pkg *Package, imports Imports) (res []*mapper.Config) {
 	ast.Inspect(file, func(node ast.Node) bool {
 		switch x := node.(type) {
 		case *ast.File:
@@ -81,7 +77,7 @@ func findMappers(file *ast.File, typeInfo *types.Info) (res []*mapper.Config) {
 			if parsedMapper == nil {
 				return false
 			}
-			mapperConfig, err := buildMapperConfig(parsedMapper, typeInfo)
+			mapperConfig, err := buildMapperConfig(parsedMapper, typeInfo, pkg, imports)
 			if err != nil {
 				return false
 			}
