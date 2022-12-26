@@ -36,7 +36,7 @@ type Type interface {
 	Name() string
 	IsPointer() bool // TODO: Remove
 	FindAccessor(name string, typeName string) string
-	BuildMapper(args ProviderList) Node
+	BuildMapper(args ProviderList) (Node, error)
 }
 
 type OpaqueType struct {
@@ -55,13 +55,13 @@ func (t *OpaqueType) FindAccessor(name string, typeName string) string {
 	return ""
 }
 
-func (t *OpaqueType) BuildMapper(args ProviderList) Node {
+func (t *OpaqueType) BuildMapper(args ProviderList) (Node, error) {
 	accessor := args.FindAccessor("", t.Name_)
 	if accessor != "" {
-		return &ValueNode{Value: accessor}
+		return &ValueNode{Value: accessor}, nil
 	}
 
-	return nil
+	return nil, fmt.Errorf("no accessor found for type %s", t.Name_)
 }
 
 type StructType struct {
@@ -93,10 +93,10 @@ func (t *StructType) FindAccessor(name string, typeName string) string {
 	return ""
 }
 
-func (t *StructType) BuildMapper(args ProviderList) Node {
+func (t *StructType) BuildMapper(args ProviderList) (Node, error) {
 	accessor := args.FindAccessor("", t.Name_)
 	if accessor != "" {
-		return &ValueNode{Value: accessor}
+		return &ValueNode{Value: accessor}, nil
 	}
 
 	res := &StructNode{
@@ -107,11 +107,11 @@ func (t *StructType) BuildMapper(args ProviderList) Node {
 	for i, v := range t.Fields {
 		accessor := args.FindAccessor(v.Name, v.Type.Name())
 		if accessor == "" {
-			return nil
+			return nil, fmt.Errorf("no accessor found for field %s %s", v.Name, v.Type.Name())
 		}
 		res.Fields[i].Name = v.Name
 		res.Fields[i].Value = &ValueNode{Value: accessor}
 	}
 
-	return res
+	return res, nil
 }

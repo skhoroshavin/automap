@@ -24,10 +24,11 @@ func (s *StructSuite) TestDirectMapping() {
 		},
 		Getters: ProviderList{},
 	}
-	mapper := strct.BuildMapper([]Provider{
+	mapper, err := strct.BuildMapper([]Provider{
 		{Name: "answer", Type: strct},
 	})
 
+	s.Assert().NoError(err)
 	s.Assert().Equal(&ValueNode{Value: "answer"}, mapper)
 }
 
@@ -40,11 +41,12 @@ func (s *StructSuite) TestArgsMapping() {
 		},
 		Getters: ProviderList{},
 	}
-	mapper := strct.BuildMapper(ProviderList{
+	mapper, err := strct.BuildMapper(ProviderList{
 		{Name: "question", Type: StringType},
 		{Name: "value", Type: StringType},
 	})
 
+	s.Assert().NoError(err)
 	s.Assert().Equal(&StructNode{
 		Name: "Answer",
 		Fields: []NamedNode{
@@ -72,10 +74,11 @@ func (s *StructSuite) TestSimpleStructMapping() {
 		},
 		Getters: ProviderList{},
 	}
-	mapper := target.BuildMapper(ProviderList{
+	mapper, err := target.BuildMapper(ProviderList{
 		{Name: "v", Type: source},
 	})
 
+	s.Assert().NoError(err)
 	s.Assert().Equal(&StructNode{
 		Name: "Answer",
 		Fields: []NamedNode{
