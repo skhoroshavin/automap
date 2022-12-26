@@ -15,6 +15,9 @@ func ValueToValue(user external.User) UserDTO {
 		FirstName: user.FirstName,
 		LastName: user.LastName,
 		AddressCode: user.Address.Code,
+		StreetAndCity: user.Address.StreetAndCity(),
 		Country: user.Address.Country,
+		PrefsGolang: user.Prefs().Golang,
+		PrefsCompiled: user.Prefs().Compiled(),
 	}
 }
