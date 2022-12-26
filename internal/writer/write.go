@@ -17,7 +17,7 @@ func Write(out io.Writer, reg *mapper.Registry) (err error) {
 	}
 
 	for _, mapper := range reg.Mappers() {
-		err = writeMapper(out, mapper)
+		err = writeOldMapper(out, mapper)
 		if err != nil {
 			return
 		}

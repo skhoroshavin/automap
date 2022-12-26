@@ -1,48 +1,46 @@
 package writer
 
 import (
+	"errors"
 	"fmt"
-	"github.com/skhoroshavin/automap/internal/core"
-	"github.com/skhoroshavin/automap/internal/mapper"
+	"github.com/skhoroshavin/automap/internal/core/ast"
 	"io"
 )
 
-func writeMapper(out io.Writer, mapper *mapper.Mapper) (err error) {
-	_, err = fmt.Fprintf(
-		out,
-		"\nfunc %s(%s %s%s) %s%s {\n",
-		mapper.Name,
-		mapper.FromName,
-		ptr("*", mapper.FromType.IsPointer()),
-		mapper.FromType.Name(),
-		ptr("*", mapper.ToType.IsPointer()),
-		mapper.ToType.Name(),
-	)
+func writeMapper(out io.Writer, mapper *ast.Mapper) (err error) {
+	if mapper.Result == nil {
+		return errors.New("mapper has empty return statement")
+	}
+
+	_, err = fmt.Fprintf(out, "%s {\n", mapper.Signature)
+
+	for _, v := range mapper.Vars {
+		_, err = fmt.Fprintf(out, "\t%s := ", v.Name)
+		if err != nil {
+			return
+		}
+
+		err = writeExpr(out, v.Value, 1)
+		if err != nil {
+			return
+		}
+
+		_, err = fmt.Fprintln(out)
+		if err != nil {
+			return
+		}
+	}
+
+	_, err = fmt.Fprint(out, "\treturn ")
 	if err != nil {
 		return
 	}
 
-	node := mapper.ToType.BuildMapper(core.ProviderList{
-		{Name: mapper.FromName, Type: mapper.FromType},
-	})
-	if node == nil {
-		err = fmt.Errorf("failed to map from %s to %s", mapper.FromType.Name(), mapper.ToType.Name())
-		return
-	}
-
-	err = writeFunc(out, core.BuildFuncBody(node))
+	err = writeExpr(out, mapper.Result, 1)
 	if err != nil {
 		return
 	}
 
-	_, err = fmt.Fprintln(out, "}")
+	_, err = fmt.Fprintln(out, "\n}")
 	return
-}
-
-func ptr(prefix string, isPointer bool) string {
-	if isPointer {
-		return prefix
-	} else {
-		return ""
-	}
 }
