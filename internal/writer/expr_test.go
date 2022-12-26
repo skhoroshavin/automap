@@ -58,16 +58,14 @@ func (s *WriteExprSuite) TestPointerStructExpr() {
 }
 
 func (s *WriteExprSuite) TestNestedStructExpr() {
-	err := writeExpr(s.out, &ast.StructExpr{
-		Name: "Question",
-		Fields: []ast.Field{
-			ast.NewField("Value", ast.NewValue("\"wtf\"")),
-			ast.NewField("Answer", ast.NewStructPtr(
-				"Answer",
-				ast.NewField("Value", ast.NewValue("42")),
-			)),
-		},
-	}, 1)
+	err := writeExpr(s.out, ast.NewStruct(
+		"Question",
+		ast.NewField("Value", ast.NewValue("\"wtf\"")),
+		ast.NewField("Answer", ast.NewStructPtr(
+			"Answer",
+			ast.NewField("Value", ast.NewValue("42")),
+		)),
+	), 1)
 	s.Assert().NoError(err)
 
 	expected := `Question{

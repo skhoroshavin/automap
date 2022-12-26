@@ -1,7 +1,7 @@
 package ast
 
 // NewStruct creates structure initialization expression
-func NewStruct(name string, fields ...Field) *StructExpr {
+func NewStruct(name string, fields ...*Field) *StructExpr {
 	return &StructExpr{
 		Name:   name,
 		Fields: fields,
@@ -9,7 +9,7 @@ func NewStruct(name string, fields ...Field) *StructExpr {
 }
 
 // NewStructPtr creates pointer to structure initialization expression
-func NewStructPtr(name string, fields ...Field) *StructExpr {
+func NewStructPtr(name string, fields ...*Field) *StructExpr {
 	return &StructExpr{
 		Name:      name,
 		Fields:    fields,
@@ -18,8 +18,8 @@ func NewStructPtr(name string, fields ...Field) *StructExpr {
 }
 
 // NewField creates new field
-func NewField(name string, value Expr) Field {
-	return Field{
+func NewField(name string, value Expr) *Field {
+	return &Field{
 		Name:  name,
 		Value: value,
 	}
@@ -28,7 +28,7 @@ func NewField(name string, value Expr) Field {
 // StructExpr represents structure initialization expression
 type StructExpr struct {
 	Name      string
-	Fields    []Field
+	Fields    []*Field
 	IsPointer bool
 }
 

@@ -35,12 +35,11 @@ func (n *StructNode) Build(mapper *ast.Mapper) ast.Expr {
 	res := &ast.StructExpr{
 		Name:      n.Name,
 		IsPointer: n.IsPointer,
-		Fields:    make([]ast.Field, len(n.Fields)),
+		Fields:    make([]*ast.Field, len(n.Fields)),
 	}
 
 	for i, field := range n.Fields {
-		res.Fields[i].Name = field.Name
-		res.Fields[i].Value = field.Value.Build(mapper)
+		res.Fields[i] = ast.NewField(field.Name, field.Value.Build(mapper))
 	}
 
 	return res
