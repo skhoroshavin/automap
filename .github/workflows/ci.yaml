@@ -15,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install deps
-        run: go get .
+        run: go mod download
       - name: Vet
         run: go vet ./...
       - name: Build
