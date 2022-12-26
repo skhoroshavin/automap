@@ -7,7 +7,7 @@
 package my
 
 import (
-	"github.com/skhoroshavin/automap/internal/_tests/01_simple/external"
+	"github.com/skhoroshavin/automap/tests/01_simple/external"
 )
 
 func ValueToValue(user external.User) UserName {
