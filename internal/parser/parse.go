@@ -20,7 +20,9 @@ func Parse(dir string) (*mapper.PackageConfig, error) {
 	var allMappers []*mapper.Config
 
 	for _, file := range gopkg.Syntax {
-		mappers := findMappers(file, gopkg.TypesInfo)
+		imports.ParseFile(file)
+
+		mappers := findMappers(file, gopkg.TypesInfo, pkg, imports)
 		if len(mappers) == 0 {
 			continue
 		}
@@ -29,7 +31,6 @@ func Parse(dir string) (*mapper.PackageConfig, error) {
 			return nil, fmt.Errorf("expected package %s, but got %s", pkg.Name, file.Name.Name)
 		}
 
-		imports.ParseFile(file)
 		allMappers = append(allMappers, mappers...)
 	}
 
@@ -66,7 +67,7 @@ func load(dir string) (res *packages.Package, err error) {
 	return
 }
 
-func findMappers(file *ast.File, typeInfo *types.Info) (res []*mapper.Config) {
+func findMappers(file *ast.File, typeInfo *types.Info, pkg *Package, imports Imports) (res []*mapper.Config) {
 	ast.Inspect(file, func(node ast.Node) bool {
 		switch x := node.(type) {
 		case *ast.File:
@@ -76,7 +77,7 @@ func findMappers(file *ast.File, typeInfo *types.Info) (res []*mapper.Config) {
 			if parsedMapper == nil {
 				return false
 			}
-			mapperConfig, err := buildMapperConfig(parsedMapper, typeInfo)
+			mapperConfig, err := buildMapperConfig(parsedMapper, typeInfo, pkg, imports)
 			if err != nil {
 				return false
 			}

@@ -5,9 +5,10 @@ import (
 	"github.com/skhoroshavin/automap/internal/mapper"
 	"go/ast"
 	"go/types"
+	"strings"
 )
 
-func parseType(typeExpr ast.Expr, typeInfo *types.Info) (mapper.Type, error) {
+func oldParseType(typeExpr ast.Expr, typeInfo *types.Info, pkg *Package, imports Imports) (mapper.Type, error) {
 	isPointer := false
 
 	// Dereference pointer if needed
@@ -47,11 +48,17 @@ func parseType(typeExpr ast.Expr, typeInfo *types.Info) (mapper.Type, error) {
 		if !field.Exported() {
 			continue
 		}
+		typ, err := parseType(field.Type(), pkg, imports)
+		if err != nil {
+			return nil, err
+		}
+
 		res.Fields = append(res.Fields, mapper.Provider{
 			Name: field.Name(),
-			Type: &mapper.OpaqueType{Name_: field.Type().String()},
+			Type: typ,
 		})
 	}
+
 	for i := 0; i != namedType.NumMethods(); i++ {
 		method := namedType.Method(i)
 		sig, ok := method.Type().(*types.Signature)
@@ -64,11 +71,47 @@ func parseType(typeExpr ast.Expr, typeInfo *types.Info) (mapper.Type, error) {
 		if sig.Params().Len() != 0 {
 			continue
 		}
+		typ, err := parseType(sig.Results().At(0).Type(), pkg, imports)
+		if err != nil {
+			return nil, err
+		}
+
 		res.Getters = append(res.Getters, mapper.Provider{
 			Name: method.Name(),
-			Type: &mapper.OpaqueType{Name_: sig.Results().At(0).Type().String()},
+			Type: typ,
 		})
 	}
 
 	return res, nil
+}
+
+func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error) {
+	name, err := parseTypeName(t.String(), pkg, imports)
+	if err != nil {
+		return nil, err
+	}
+
+	return &mapper.OpaqueType{Name_: name}, nil
+}
+
+func parseTypeName(typeId string, pkg *Package, imports Imports) (string, error) {
+	name := typeId
+
+	dot := strings.LastIndex(name, ".")
+	if dot < 0 {
+		return name, nil
+	}
+
+	path := name[:dot]
+	name = name[dot+1:]
+	if path == pkg.Path {
+		return name, nil
+	}
+
+	prefix, ok := imports[path]
+	if !ok {
+		return "", fmt.Errorf("failed to resolve type name %s", typeId)
+	}
+
+	return fmt.Sprintf("%s.%s", prefix, name), nil
 }

@@ -61,15 +61,15 @@ func parseField(field *ast.Field) (res *Field) {
 	return
 }
 
-func buildMapperConfig(src *Mapper, typeInfo *types.Info) (res *mapper.Config, err error) {
+func buildMapperConfig(src *Mapper, typeInfo *types.Info, pkg *Package, imports Imports) (res *mapper.Config, err error) {
 	res = new(mapper.Config)
 	res.Name = src.Name
 	res.FromName = src.From.Name
-	res.FromType, err = parseType(src.From.Type, typeInfo)
+	res.FromType, err = oldParseType(src.From.Type, typeInfo, pkg, imports)
 	if err != nil {
 		return
 	}
-	res.ToType, err = parseType(src.To.Type, typeInfo)
+	res.ToType, err = oldParseType(src.To.Type, typeInfo, pkg, imports)
 	if err != nil {
 		return
 	}
