@@ -14,3 +14,7 @@ func ValueToPtr(user another.User) *UserName {
 func PtrToValue(user *another.User) UserName {
 	panic(automap.Build())
 }
+
+func NotMapper(user another.User) UserName {
+	panic("not a mapper")
+}
