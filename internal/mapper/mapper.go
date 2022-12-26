@@ -14,11 +14,11 @@ type Config struct {
 }
 
 func Build(cfg *Config) (*ast.Mapper, error) {
-	node := cfg.ToType.BuildMapper(ProviderList{
+	node, err := cfg.ToType.BuildMapper(ProviderList{
 		{Name: cfg.FromName, Type: cfg.FromType},
 	})
-	if node == nil {
-		return nil, fmt.Errorf("failed to map from %s to %s", cfg.FromType.Name(), cfg.ToType.Name())
+	if err != nil {
+		return nil, fmt.Errorf("failed to map from %s to %s: %w", cfg.FromType.Name(), cfg.ToType.Name(), err)
 	}
 
 	mapper := &ast.Mapper{
@@ -32,7 +32,7 @@ func Build(cfg *Config) (*ast.Mapper, error) {
 			cfg.ToType.Name(),
 		),
 	}
-	mapper.Result = node.Build(mapper)
+	node.CompileTo(mapper)
 
 	return mapper, nil
 }

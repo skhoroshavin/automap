@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"fmt"
+	"github.com/skhoroshavin/automap/internal/mapper/node"
 	"strings"
 )
 
@@ -24,6 +25,14 @@ func (l ProviderList) FindAccessor(name string, typeName string) string {
 			continue
 		}
 
+		if strings.HasPrefix(strings.ToLower(name), strings.ToLower(p.Name)) {
+			name := name[len(p.Name):]
+			sub := p.Type.FindAccessor(name, typeName)
+			if sub != "" {
+				return fmt.Sprintf("%s.%s", p.Name, sub)
+			}
+		}
+
 		sub := p.Type.FindAccessor(name, typeName)
 		if sub != "" {
 			return fmt.Sprintf("%s.%s", p.Name, sub)
@@ -36,7 +45,7 @@ type Type interface {
 	Name() string
 	IsPointer() bool // TODO: Remove
 	FindAccessor(name string, typeName string) string
-	BuildMapper(args ProviderList) Node
+	BuildMapper(args ProviderList) (node.Node, error)
 }
 
 type OpaqueType struct {
@@ -55,13 +64,13 @@ func (t *OpaqueType) FindAccessor(name string, typeName string) string {
 	return ""
 }
 
-func (t *OpaqueType) BuildMapper(args ProviderList) Node {
+func (t *OpaqueType) BuildMapper(args ProviderList) (node.Node, error) {
 	accessor := args.FindAccessor("", t.Name_)
 	if accessor != "" {
-		return &ValueNode{Value: accessor}
+		return node.NewValue(accessor), nil
 	}
 
-	return nil
+	return nil, fmt.Errorf("no accessor found for type %s", t.Name_)
 }
 
 type StructType struct {
@@ -93,25 +102,24 @@ func (t *StructType) FindAccessor(name string, typeName string) string {
 	return ""
 }
 
-func (t *StructType) BuildMapper(args ProviderList) Node {
+func (t *StructType) BuildMapper(args ProviderList) (node.Node, error) {
 	accessor := args.FindAccessor("", t.Name_)
 	if accessor != "" {
-		return &ValueNode{Value: accessor}
+		return node.NewValue(accessor), nil
 	}
 
-	res := &StructNode{
-		Name:      t.Name(),
-		IsPointer: t.IsPointer(),
-		Fields:    make([]NamedNode, len(t.Fields)),
-	}
+	fields := make([]*node.Field, len(t.Fields))
 	for i, v := range t.Fields {
 		accessor := args.FindAccessor(v.Name, v.Type.Name())
 		if accessor == "" {
-			return nil
+			return nil, fmt.Errorf("no accessor found for field %s %s", v.Name, v.Type.Name())
 		}
-		res.Fields[i].Name = v.Name
-		res.Fields[i].Value = &ValueNode{Value: accessor}
+		fields[i] = node.NewField(v.Name, node.NewValue(accessor))
 	}
 
-	return res
+	if t.IsPointer() {
+		return node.NewStructPtr(t.Name(), fields...), nil
+	} else {
+		return node.NewStruct(t.Name(), fields...), nil
+	}
 }

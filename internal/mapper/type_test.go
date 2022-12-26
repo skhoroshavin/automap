@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"github.com/skhoroshavin/automap/internal/mapper/node"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -24,11 +25,12 @@ func (s *StructSuite) TestDirectMapping() {
 		},
 		Getters: ProviderList{},
 	}
-	mapper := strct.BuildMapper([]Provider{
+	mapper, err := strct.BuildMapper([]Provider{
 		{Name: "answer", Type: strct},
 	})
 
-	s.Assert().Equal(&ValueNode{Value: "answer"}, mapper)
+	s.Assert().NoError(err)
+	s.Assert().Equal(node.NewValue("answer"), mapper)
 }
 
 func (s *StructSuite) TestArgsMapping() {
@@ -40,18 +42,17 @@ func (s *StructSuite) TestArgsMapping() {
 		},
 		Getters: ProviderList{},
 	}
-	mapper := strct.BuildMapper(ProviderList{
+	mapper, err := strct.BuildMapper(ProviderList{
 		{Name: "question", Type: StringType},
 		{Name: "value", Type: StringType},
 	})
 
-	s.Assert().Equal(&StructNode{
-		Name: "Answer",
-		Fields: []NamedNode{
-			{Name: "Value", Value: &ValueNode{Value: "value"}},
-			{Name: "Question", Value: &ValueNode{Value: "question"}},
-		},
-	}, mapper)
+	s.Assert().NoError(err)
+	s.Assert().Equal(node.NewStruct(
+		"Answer",
+		node.NewField("Value", node.NewValue("value")),
+		node.NewField("Question", node.NewValue("question")),
+	), mapper)
 }
 
 func (s *StructSuite) TestSimpleStructMapping() {
@@ -72,15 +73,14 @@ func (s *StructSuite) TestSimpleStructMapping() {
 		},
 		Getters: ProviderList{},
 	}
-	mapper := target.BuildMapper(ProviderList{
+	mapper, err := target.BuildMapper(ProviderList{
 		{Name: "v", Type: source},
 	})
 
-	s.Assert().Equal(&StructNode{
-		Name: "Answer",
-		Fields: []NamedNode{
-			{Name: "Value", Value: &ValueNode{Value: "v.Value"}},
-			{Name: "Question", Value: &ValueNode{Value: "v.Question"}},
-		},
-	}, mapper)
+	s.Assert().NoError(err)
+	s.Assert().Equal(node.NewStruct(
+		"Answer",
+		node.NewField("Value", node.NewValue("v.Value")),
+		node.NewField("Question", node.NewValue("v.Question")),
+	), mapper)
 }
