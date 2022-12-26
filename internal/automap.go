@@ -13,10 +13,15 @@ func AutoMap(out io.Writer, dir string) error {
 		return err
 	}
 
-	mappings, err := oldmapper.New(parseRes)
+	oldReg, err := oldmapper.New(parseRes)
 	if err != nil {
 		return nil
 	}
 
-	return writer.OldWrite(out, mappings)
+	pkg, err := oldmapper.BuildPackage(oldReg)
+	if err != nil {
+		return err
+	}
+
+	return writer.WritePackage(out, pkg)
 }

@@ -1,14 +1,12 @@
-package writer
+package oldmapper
 
 import (
 	"fmt"
 	"github.com/skhoroshavin/automap/internal/mapper"
 	"github.com/skhoroshavin/automap/internal/mapper/ast"
-	"github.com/skhoroshavin/automap/internal/oldmapper"
-	"io"
 )
 
-func OldWrite(out io.Writer, reg *oldmapper.Registry) error {
+func BuildPackage(reg *Registry) (*ast.Package, error) {
 	pkg := &ast.Package{
 		Name:    reg.Package(),
 		Imports: reg.Imports(),
@@ -20,7 +18,7 @@ func OldWrite(out io.Writer, reg *oldmapper.Registry) error {
 			{Name: oldMapper.FromName, Type: oldMapper.FromType},
 		})
 		if node == nil {
-			return fmt.Errorf("failed to map from %s to %s", oldMapper.FromType.Name(), oldMapper.ToType.Name())
+			return nil, fmt.Errorf("failed to map from %s to %s", oldMapper.FromType.Name(), oldMapper.ToType.Name())
 		}
 
 		mpr := &ast.Mapper{
@@ -39,7 +37,7 @@ func OldWrite(out io.Writer, reg *oldmapper.Registry) error {
 		pkg.Mappers[i] = mpr
 	}
 
-	return writePackage(out, pkg)
+	return pkg, nil
 }
 
 func ptr(prefix string, isPointer bool) string {

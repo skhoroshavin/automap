@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-func writePackage(out io.Writer, pkg *ast.Package) (err error) {
+func WritePackage(out io.Writer, pkg *ast.Package) (err error) {
 	_, err = fmt.Fprintf(out, packageHeader, pkg.Name)
 	if err != nil {
 		return
