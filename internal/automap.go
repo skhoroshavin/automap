@@ -8,14 +8,9 @@ import (
 )
 
 func AutoMap(out io.Writer, dir string) error {
-	parseRes, err := parser.Parse(dir)
+	pkgConfig, err := parser.Parse(dir)
 	if err != nil {
 		return err
-	}
-
-	pkgConfig, err := parser.BuildPackageConfig(parseRes)
-	if err != nil {
-		return nil
 	}
 
 	pkg, err := mapper.BuildPackage(pkgConfig)
