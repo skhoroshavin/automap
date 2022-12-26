@@ -17,7 +17,7 @@ func Parse(dir string) (pkgCfg *mapper.PackageConfig, err error) {
 		return
 	}
 
-	imports := NewImportMap()
+	imports := NewImports()
 
 	for _, file := range pkg.Syntax {
 		mappers := findMappers(file, pkg.TypesInfo)

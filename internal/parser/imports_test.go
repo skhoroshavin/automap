@@ -12,38 +12,48 @@ func TestImports(t *testing.T) {
 
 type ImportsSuite struct {
 	suite.Suite
+	imports Imports
+}
+
+func (s *ImportsSuite) SetupTest() {
+	s.imports = NewImports()
 }
 
 func (s *ImportsSuite) TestTrivial() {
-	path, name := parseImport(&ast.ImportSpec{
+	s.imports.Insert(&ast.ImportSpec{
 		Path: &ast.BasicLit{Value: `"strings"`},
 	})
 
-	s.Assert().Equal("strings", path)
-	s.Assert().Equal("strings", name)
+	s.Assert().Equal(Imports{"strings": "strings"}, s.imports)
 }
 
 func (s *ImportsSuite) TestUnnamed() {
-	path, name := parseImport(&ast.ImportSpec{
-		Path: &ast.BasicLit{Value: `"github.com/skhoroshavin/automap"`},
+	s.imports.Insert(&ast.ImportSpec{
+		Path: &ast.BasicLit{Value: `"github.com/skhoroshavin/automap/internal/mapper"`},
 	})
 
-	s.Assert().Equal("github.com/skhoroshavin/automap", path)
-	s.Assert().Equal("automap", name)
+	s.Assert().Equal(Imports{"github.com/skhoroshavin/automap/internal/mapper": "mapper"}, s.imports)
 }
 
 func (s *ImportsSuite) TestNamed() {
-	path, name := parseImport(&ast.ImportSpec{
-		Name: &ast.Ident{Name: "xxx"},
+	s.imports.Insert(&ast.ImportSpec{
+		Name: &ast.Ident{Name: "impl"},
+		Path: &ast.BasicLit{Value: `"github.com/skhoroshavin/automap/internal"`},
+	})
+
+	s.Assert().Equal(Imports{"github.com/skhoroshavin/automap/internal": "impl"}, s.imports)
+}
+
+func (s *ImportsSuite) TestSkipAutomap() {
+	s.imports.Insert(&ast.ImportSpec{
 		Path: &ast.BasicLit{Value: `"github.com/skhoroshavin/automap"`},
 	})
 
-	s.Assert().Equal("github.com/skhoroshavin/automap", path)
-	s.Assert().Equal("xxx", name)
+	s.Assert().Empty(s.imports)
 }
 
 func (s *ImportsSuite) TestConvertToList() {
-	imports := ImportMap{
+	imports := Imports{
 		"string":                          "string",
 		"github.com/skhoroshavin/automap": "automap",
 		"github.com/skhoroshavin/automap/internal": "impl",

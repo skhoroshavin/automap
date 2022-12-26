@@ -6,23 +6,41 @@ import (
 	"strings"
 )
 
-type ImportMap map[string]string
+type Imports map[string]string
 
-func NewImportMap() ImportMap {
-	return make(ImportMap)
+func NewImports() Imports {
+	return make(Imports)
 }
 
-func (m ImportMap) Merge(file *ast.File) {
+func (m Imports) Merge(file *ast.File) {
 	for _, spec := range file.Imports {
-		path, name := parseImport(spec)
-		if name == "automap" {
-			continue
-		}
-		m[path] = name
+		m.Insert(spec)
 	}
 }
 
-func (m ImportMap) ToList() []string {
+func (m Imports) Insert(spec *ast.ImportSpec) {
+	path := strings.ReplaceAll(spec.Path.Value, "\"", "")
+
+	var name string
+	if spec.Name == nil {
+		idx := strings.LastIndex(path, "/")
+		if idx < 0 {
+			name = path
+		} else {
+			name = path[idx+1:]
+		}
+	} else {
+		name = spec.Name.Name
+	}
+
+	if name == "automap" {
+		return
+	}
+
+	m[path] = name
+}
+
+func (m Imports) ToList() []string {
 	res := make([]string, 0, len(m))
 	for path, name := range m {
 		isUnnamed := (path == name) ||
@@ -35,19 +53,4 @@ func (m ImportMap) ToList() []string {
 		}
 	}
 	return res
-}
-
-func parseImport(spec *ast.ImportSpec) (path, name string) {
-	path = strings.ReplaceAll(spec.Path.Value, "\"", "")
-	if spec.Name != nil {
-		name = spec.Name.Name
-		return
-	}
-	idx := strings.LastIndex(path, "/")
-	if idx < 0 {
-		name = path
-		return
-	}
-	name = path[idx+1:]
-	return
 }
