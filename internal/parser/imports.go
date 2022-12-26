@@ -1,24 +1,53 @@
 package parser
 
 import (
+	"fmt"
 	"go/ast"
 	"strings"
 )
 
-type Imports map[string]struct{}
+type ImportMap map[string]string
 
-func newImports() Imports {
-	return make(Imports)
+func NewImportMap() ImportMap {
+	return make(ImportMap)
 }
 
-func mergeImports(imports Imports, file *ast.File) {
+func (m ImportMap) Merge(file *ast.File) {
 	for _, spec := range file.Imports {
-		if spec.Path.Value == `"automap"` {
+		path, name := parseImport(spec)
+		if name == "automap" {
 			continue
 		}
-		if strings.HasSuffix(spec.Path.Value, `/automap"`) {
-			continue
-		}
-		imports[nodeToString(spec)] = struct{}{}
+		m[path] = name
 	}
+}
+
+func (m ImportMap) ToList() []string {
+	res := make([]string, 0, len(m))
+	for path, name := range m {
+		isUnnamed := (path == name) ||
+			strings.HasSuffix(path, fmt.Sprintf("/%s", name))
+
+		if isUnnamed {
+			res = append(res, fmt.Sprintf(`"%s"`, path))
+		} else {
+			res = append(res, fmt.Sprintf(`%s "%s"`, name, path))
+		}
+	}
+	return res
+}
+
+func parseImport(spec *ast.ImportSpec) (path, name string) {
+	path = strings.ReplaceAll(spec.Path.Value, "\"", "")
+	if spec.Name != nil {
+		name = spec.Name.Name
+		return
+	}
+	idx := strings.LastIndex(path, "/")
+	if idx < 0 {
+		name = path
+		return
+	}
+	name = path[idx+1:]
+	return
 }

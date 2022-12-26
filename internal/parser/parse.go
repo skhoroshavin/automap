@@ -17,7 +17,7 @@ func Parse(dir string) (pkgCfg *mapper.PackageConfig, err error) {
 		return
 	}
 
-	imports := newImports()
+	imports := NewImportMap()
 
 	for _, file := range pkg.Syntax {
 		mappers := findMappers(file, pkg.TypesInfo)
@@ -25,23 +25,18 @@ func Parse(dir string) (pkgCfg *mapper.PackageConfig, err error) {
 			continue
 		}
 
+		imports.Merge(file)
+
 		if pkgCfg.Name != "" {
 			if pkgCfg.Name != file.Name.Name {
 				err = fmt.Errorf("expected package %s, but got %s", pkgCfg.Name, file.Name.Name)
 			}
 		}
 		pkgCfg.Name = file.Name.Name
-
-		mergeImports(imports, file)
-
 		pkgCfg.Mappers = append(pkgCfg.Mappers, mappers...)
 	}
 
-	pkgCfg.Imports = make([]string, 0, len(imports))
-	for v := range imports {
-		pkgCfg.Imports = append(pkgCfg.Imports, v)
-	}
-
+	pkgCfg.Imports = imports.ToList()
 	return
 }
 
