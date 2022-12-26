@@ -1,11 +1,13 @@
 package core
 
+import "github.com/skhoroshavin/automap/internal/core/ast"
+
 type Node interface {
-	Build(fn *FuncBody) Expr
+	Build(*ast.Mapper) ast.Expr
 }
 
-func BuildFuncBody(node Node) *FuncBody {
-	res := new(FuncBody)
+func BuildFuncBody(node Node) *ast.Mapper {
+	res := new(ast.Mapper)
 	res.Result = node.Build(res)
 	return res
 }
@@ -19,8 +21,8 @@ type ValueNode struct {
 	Value string
 }
 
-func (n *ValueNode) Build(_ *FuncBody) Expr {
-	return &ValueExpr{Value: n.Value}
+func (n *ValueNode) Build(mapper *ast.Mapper) ast.Expr {
+	return &ast.ValueExpr{Value: n.Value}
 }
 
 type StructNode struct {
@@ -29,16 +31,16 @@ type StructNode struct {
 	IsPointer bool
 }
 
-func (n *StructNode) Build(fn *FuncBody) Expr {
-	res := &StructExpr{
+func (n *StructNode) Build(mapper *ast.Mapper) ast.Expr {
+	res := &ast.StructExpr{
 		Name:      n.Name,
 		IsPointer: n.IsPointer,
-		Fields:    make([]FieldExpr, len(n.Fields)),
+		Fields:    make([]ast.Field, len(n.Fields)),
 	}
 
 	for i, field := range n.Fields {
 		res.Fields[i].Name = field.Name
-		res.Fields[i].Value = field.Value.Build(fn)
+		res.Fields[i].Value = field.Value.Build(mapper)
 	}
 
 	return res

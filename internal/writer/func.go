@@ -3,11 +3,11 @@ package writer
 import (
 	"errors"
 	"fmt"
-	"github.com/skhoroshavin/automap/internal/core"
+	"github.com/skhoroshavin/automap/internal/core/ast"
 	"io"
 )
 
-func writeFunc(out io.Writer, fn *core.FuncBody) (err error) {
+func writeFunc(out io.Writer, fn *ast.Mapper) (err error) {
 	if fn.Result == nil {
 		return errors.New("function has empty return statement")
 	}

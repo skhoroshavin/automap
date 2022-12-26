@@ -2,7 +2,7 @@ package writer
 
 import (
 	"bytes"
-	"github.com/skhoroshavin/automap/internal/core"
+	"github.com/skhoroshavin/automap/internal/core/ast"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -21,34 +21,34 @@ func (s *WriteFuncSuite) SetupTest() {
 }
 
 func (s *WriteFuncSuite) TestWriteEmptyFuncFails() {
-	err := writeFunc(s.out, &core.FuncBody{})
+	err := writeFunc(s.out, &ast.Mapper{})
 	s.Assert().Error(err)
 }
 
 func (s *WriteFuncSuite) TestWriteFuncWithSingleResultCreatesSingleReturnStatement() {
-	err := writeFunc(s.out, &core.FuncBody{
-		Result: &core.ValueExpr{Value: "42"},
+	err := writeFunc(s.out, &ast.Mapper{
+		Result: &ast.ValueExpr{Value: "42"},
 	})
 	s.Assert().NoError(err)
 	s.Assert().Equal("\treturn 42\n", s.out.String())
 }
 
 func (s *WriteFuncSuite) TestWriteFuncWithoutResultFails() {
-	err := writeFunc(s.out, &core.FuncBody{
-		Vars: []core.Variable{
-			{Name: "tmp", Value: &core.ValueExpr{Value: "42"}},
+	err := writeFunc(s.out, &ast.Mapper{
+		Vars: []ast.Variable{
+			{Name: "tmp", Value: &ast.ValueExpr{Value: "42"}},
 		},
 	})
 	s.Assert().Error(err)
 }
 
 func (s *WriteFuncSuite) TestWriteFuncWithVariablesCreatesThemInOrderThenReturnStatement() {
-	err := writeFunc(s.out, &core.FuncBody{
-		Vars: []core.Variable{
-			{Name: "a", Value: &core.ValueExpr{Value: "20"}},
-			{Name: "b", Value: &core.ValueExpr{Value: "a + 2"}},
+	err := writeFunc(s.out, &ast.Mapper{
+		Vars: []ast.Variable{
+			{Name: "a", Value: &ast.ValueExpr{Value: "20"}},
+			{Name: "b", Value: &ast.ValueExpr{Value: "a + 2"}},
 		},
-		Result: &core.ValueExpr{Value: "a + b"},
+		Result: &ast.ValueExpr{Value: "a + b"},
 	})
 	s.Assert().NoError(err)
 
@@ -61,21 +61,21 @@ func (s *WriteFuncSuite) TestWriteFuncWithVariablesCreatesThemInOrderThenReturnS
 }
 
 func (s *WriteFuncSuite) TestWriteFuncHandlesComplexExpressions() {
-	err := writeFunc(s.out, &core.FuncBody{
-		Vars: []core.Variable{
-			{Name: "answer", Value: &core.StructExpr{
+	err := writeFunc(s.out, &ast.Mapper{
+		Vars: []ast.Variable{
+			{Name: "answer", Value: &ast.StructExpr{
 				Name:      "Answer",
 				IsPointer: true,
-				Fields: []core.FieldExpr{
-					{Name: "Value", Value: &core.ValueExpr{Value: "42"}},
+				Fields: []ast.Field{
+					{Name: "Value", Value: &ast.ValueExpr{Value: "42"}},
 				},
 			}},
 		},
-		Result: &core.StructExpr{
+		Result: &ast.StructExpr{
 			Name: "Question",
-			Fields: []core.FieldExpr{
-				{Name: "Value", Value: &core.ValueExpr{Value: "\"wtf\""}},
-				{Name: "Answer", Value: &core.ValueExpr{Value: "answer"}},
+			Fields: []ast.Field{
+				{Name: "Value", Value: &ast.ValueExpr{Value: "\"wtf\""}},
+				{Name: "Answer", Value: &ast.ValueExpr{Value: "answer"}},
 			},
 		},
 	})
