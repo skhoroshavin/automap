@@ -18,5 +18,5 @@ func AutoMap(out io.Writer, dir string) error {
 		return nil
 	}
 
-	return writer.Write(out, mappings)
+	return writer.OldWrite(out, mappings)
 }

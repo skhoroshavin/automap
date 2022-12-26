@@ -5,13 +5,13 @@ import (
 	"io"
 )
 
-func Write(out io.Writer, reg *oldmapper.Registry) (err error) {
-	err = writeHeader(out, reg.Package())
+func OldWrite(out io.Writer, reg *oldmapper.Registry) (err error) {
+	err = writeOldHeader(out, reg.Package())
 	if err != nil {
 		return
 	}
 
-	err = writeImports(out, reg.Imports())
+	err = writeOldImports(out, reg.Imports())
 	if err != nil {
 		return
 	}

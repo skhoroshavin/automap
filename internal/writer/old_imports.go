@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-func writeImports(out io.Writer, imports []string) (err error) {
+func writeOldImports(out io.Writer, imports []string) (err error) {
 	if len(imports) == 0 {
 		return
 	}
