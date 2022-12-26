@@ -13,17 +13,19 @@ type StructSuite struct {
 	suite.Suite
 }
 
+var StringType = &OpaqueType{Name_: "string"}
+
 func (s *StructSuite) TestDirectMapping() {
 	strct := &StructType{
-		Name: "Answer",
+		Name_: "Answer",
 		Fields: []Provider{
-			{Name: "Value", Type: "string"},
-			{Name: "Question", Type: "string"},
+			{Name: "Value", Type: StringType},
+			{Name: "Question", Type: StringType},
 		},
 		Getters: []Provider{},
 	}
 	mapper := strct.BuildMapper([]Provider{
-		{Name: "answer", Type: "Answer"},
+		{Name: "answer", Type: strct},
 	})
 
 	s.Assert().Equal(&ValueNode{Value: "answer"}, mapper)
@@ -31,16 +33,16 @@ func (s *StructSuite) TestDirectMapping() {
 
 func (s *StructSuite) TestArgsMapping() {
 	strct := &StructType{
-		Name: "Answer",
+		Name_: "Answer",
 		Fields: []Provider{
-			{Name: "Value", Type: "string"},
-			{Name: "Question", Type: "string"},
+			{Name: "Value", Type: StringType},
+			{Name: "Question", Type: StringType},
 		},
 		Getters: []Provider{},
 	}
 	mapper := strct.BuildMapper([]Provider{
-		{Name: "question", Type: "string"},
-		{Name: "value", Type: "string"},
+		{Name: "question", Type: StringType},
+		{Name: "value", Type: StringType},
 	})
 
 	s.Assert().Equal(&StructNode{
@@ -54,24 +56,24 @@ func (s *StructSuite) TestArgsMapping() {
 
 func (s *StructSuite) TestSimpleStructMapping() {
 	target := &StructType{
-		Name: "Answer",
+		Name_: "Answer",
 		Fields: []Provider{
-			{Name: "Value", Type: "string"},
-			{Name: "Question", Type: "string"},
+			{Name: "Value", Type: StringType},
+			{Name: "Question", Type: StringType},
 		},
 		Getters: []Provider{},
 	}
 	source := &StructType{
-		Name: "core.Answer",
+		Name_: "core.Answer",
 		Fields: []Provider{
-			{Name: "Value", Type: "string"},
-			{Name: "Question", Type: "string"},
-			{Name: "Reason", Type: "string"},
+			{Name: "Value", Type: StringType},
+			{Name: "Question", Type: StringType},
+			{Name: "Reason", Type: StringType},
 		},
 		Getters: []Provider{},
 	}
 	mapper := target.BuildMapper([]Provider{
-		{Name: "v", Type: source.Name},
+		{Name: "v", Type: source},
 	})
 
 	s.Assert().Equal(&StructNode{

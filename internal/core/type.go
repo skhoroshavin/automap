@@ -4,26 +4,41 @@ import "strings"
 
 type Provider struct {
 	Name string
-	// TODO: Make it type
-	Type string
+	Type Type
+}
+
+type Type interface {
+	Name() string
+}
+
+type OpaqueType struct {
+	Name_ string
+}
+
+func (t *OpaqueType) Name() string {
+	return t.Name_
 }
 
 type StructType struct {
-	Name      string
+	Name_     string
 	IsPointer bool
 	Fields    []Provider
 	Getters   []Provider
 }
 
+func (t *StructType) Name() string {
+	return t.Name_
+}
+
 func (t *StructType) BuildMapper(args []Provider) Node {
 	for _, arg := range args {
-		if arg.Type == t.Name {
+		if arg.Type.Name() == t.Name() {
 			return &ValueNode{Value: arg.Name}
 		}
 	}
 
 	res := &StructNode{
-		Name:      t.Name,
+		Name:      t.Name(),
 		IsPointer: t.IsPointer,
 		Fields:    make([]NamedNode, len(t.Fields)),
 	}
