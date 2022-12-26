@@ -1,7 +1,9 @@
 package parser
 
 import (
+	"github.com/skhoroshavin/automap/internal/mapper"
 	"go/ast"
+	"go/types"
 )
 
 type Mapper struct {
@@ -56,5 +58,20 @@ func parseField(field *ast.Field) (res *Field) {
 		return
 	}
 	res.Name = field.Names[0].Name
+	return
+}
+
+func buildMapperConfig(src *Mapper, typeInfo *types.Info) (res *mapper.Config, err error) {
+	res = new(mapper.Config)
+	res.Name = src.Name
+	res.FromName = src.From.Name
+	res.FromType, err = parseType(src.From.Type, typeInfo)
+	if err != nil {
+		return
+	}
+	res.ToType, err = parseType(src.To.Type, typeInfo)
+	if err != nil {
+		return
+	}
 	return
 }

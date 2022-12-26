@@ -3,45 +3,43 @@ package parser
 import (
 	"errors"
 	"fmt"
+	"github.com/skhoroshavin/automap/internal/mapper"
 	"go/ast"
 	"go/types"
 	"golang.org/x/tools/go/packages"
 )
 
-type Result struct {
-	Package  string
-	Imports  Imports
-	TypeInfo *types.Info
-	Mappers  []*Mapper
-}
-
-func Parse(dir string) (res *Result, err error) {
-	res = new(Result)
+func Parse(dir string) (pkgCfg *mapper.PackageConfig, err error) {
+	pkgCfg = new(mapper.PackageConfig)
 
 	pkg, err := load(dir)
 	if err != nil {
 		return
 	}
 
-	res.TypeInfo = pkg.TypesInfo
-	res.Imports = newImports()
+	imports := newImports()
 
 	for _, file := range pkg.Syntax {
-		mappers := findMappers(file)
+		mappers := findMappers(file, pkg.TypesInfo)
 		if len(mappers) == 0 {
 			continue
 		}
 
-		if res.Package != "" {
-			if res.Package != file.Name.Name {
-				err = fmt.Errorf("expected package %s, but got %s", res.Package, file.Name.Name)
+		if pkgCfg.Name != "" {
+			if pkgCfg.Name != file.Name.Name {
+				err = fmt.Errorf("expected package %s, but got %s", pkgCfg.Name, file.Name.Name)
 			}
 		}
-		res.Package = file.Name.Name
+		pkgCfg.Name = file.Name.Name
 
-		mergeImports(res.Imports, file)
+		mergeImports(imports, file)
 
-		res.Mappers = append(res.Mappers, mappers...)
+		pkgCfg.Mappers = append(pkgCfg.Mappers, mappers...)
+	}
+
+	pkgCfg.Imports = make([]string, 0, len(imports))
+	for v := range imports {
+		pkgCfg.Imports = append(pkgCfg.Imports, v)
 	}
 
 	return
@@ -73,16 +71,21 @@ func load(dir string) (res *packages.Package, err error) {
 	return
 }
 
-func findMappers(file *ast.File) (res []*Mapper) {
+func findMappers(file *ast.File, typeInfo *types.Info) (res []*mapper.Config) {
 	ast.Inspect(file, func(node ast.Node) bool {
 		switch x := node.(type) {
 		case *ast.File:
 			return true
 		case *ast.FuncDecl:
-			mapper := parseMapper(x)
-			if mapper != nil {
-				res = append(res, mapper)
+			parsedMapper := parseMapper(x)
+			if parsedMapper == nil {
+				return false
 			}
+			mapperConfig, err := buildMapperConfig(parsedMapper, typeInfo)
+			if err != nil {
+				return false
+			}
+			res = append(res, mapperConfig)
 			return false
 		default:
 			return false

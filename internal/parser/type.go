@@ -1,4 +1,4 @@
-package oldmapper
+package parser
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"go/types"
 )
 
-func ParseType(typeExpr ast.Expr, typeInfo *types.Info) (mapper.Type, error) {
+func parseType(typeExpr ast.Expr, typeInfo *types.Info) (mapper.Type, error) {
 	isPointer := false
 
 	// Dereference pointer if needed
