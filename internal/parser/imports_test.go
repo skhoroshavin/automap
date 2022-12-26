@@ -20,7 +20,7 @@ func (s *ImportsSuite) SetupTest() {
 }
 
 func (s *ImportsSuite) TestTrivial() {
-	s.imports.Insert(&ast.ImportSpec{
+	s.imports.ParseImport(&ast.ImportSpec{
 		Path: &ast.BasicLit{Value: `"strings"`},
 	})
 
@@ -28,7 +28,7 @@ func (s *ImportsSuite) TestTrivial() {
 }
 
 func (s *ImportsSuite) TestUnnamed() {
-	s.imports.Insert(&ast.ImportSpec{
+	s.imports.ParseImport(&ast.ImportSpec{
 		Path: &ast.BasicLit{Value: `"github.com/skhoroshavin/automap/internal/mapper"`},
 	})
 
@@ -36,7 +36,7 @@ func (s *ImportsSuite) TestUnnamed() {
 }
 
 func (s *ImportsSuite) TestNamed() {
-	s.imports.Insert(&ast.ImportSpec{
+	s.imports.ParseImport(&ast.ImportSpec{
 		Name: &ast.Ident{Name: "impl"},
 		Path: &ast.BasicLit{Value: `"github.com/skhoroshavin/automap/internal"`},
 	})
@@ -45,7 +45,7 @@ func (s *ImportsSuite) TestNamed() {
 }
 
 func (s *ImportsSuite) TestSkipAutomap() {
-	s.imports.Insert(&ast.ImportSpec{
+	s.imports.ParseImport(&ast.ImportSpec{
 		Path: &ast.BasicLit{Value: `"github.com/skhoroshavin/automap"`},
 	})
 

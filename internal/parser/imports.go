@@ -12,25 +12,20 @@ func NewImports() Imports {
 	return make(Imports)
 }
 
-func (m Imports) Merge(file *ast.File) {
+func (m Imports) ParseFile(file *ast.File) {
 	for _, spec := range file.Imports {
-		m.Insert(spec)
+		m.ParseImport(spec)
 	}
 }
 
-func (m Imports) Insert(spec *ast.ImportSpec) {
+func (m Imports) ParseImport(spec *ast.ImportSpec) {
 	path := strings.ReplaceAll(spec.Path.Value, "\"", "")
 
 	var name string
-	if spec.Name == nil {
-		idx := strings.LastIndex(path, "/")
-		if idx < 0 {
-			name = path
-		} else {
-			name = path[idx+1:]
-		}
-	} else {
+	if spec.Name != nil {
 		name = spec.Name.Name
+	} else {
+		name = parsePackageName(path)
 	}
 
 	if name == "automap" {

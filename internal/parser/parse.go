@@ -9,35 +9,35 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func Parse(dir string) (pkgCfg *mapper.PackageConfig, err error) {
-	pkgCfg = new(mapper.PackageConfig)
-
-	pkg, err := load(dir)
+func Parse(dir string) (*mapper.PackageConfig, error) {
+	gopkg, err := load(dir)
 	if err != nil {
-		return
+		return nil, err
 	}
 
+	pkg := ParsePackage(gopkg)
 	imports := NewImports()
+	var allMappers []*mapper.Config
 
-	for _, file := range pkg.Syntax {
-		mappers := findMappers(file, pkg.TypesInfo)
+	for _, file := range gopkg.Syntax {
+		mappers := findMappers(file, gopkg.TypesInfo)
 		if len(mappers) == 0 {
 			continue
 		}
 
-		imports.Merge(file)
-
-		if pkgCfg.Name != "" {
-			if pkgCfg.Name != file.Name.Name {
-				err = fmt.Errorf("expected package %s, but got %s", pkgCfg.Name, file.Name.Name)
-			}
+		if file.Name.Name != pkg.Name {
+			return nil, fmt.Errorf("expected package %s, but got %s", pkg.Name, file.Name.Name)
 		}
-		pkgCfg.Name = file.Name.Name
-		pkgCfg.Mappers = append(pkgCfg.Mappers, mappers...)
+
+		imports.ParseFile(file)
+		allMappers = append(allMappers, mappers...)
 	}
 
-	pkgCfg.Imports = imports.ToList()
-	return
+	return &mapper.PackageConfig{
+		Name:    pkg.Name,
+		Imports: imports.ToList(),
+		Mappers: allMappers,
+	}, nil
 }
 
 func load(dir string) (res *packages.Package, err error) {
