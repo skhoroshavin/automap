@@ -14,6 +14,7 @@ func ValueToValue(user external.User) UserDTO {
 	return UserDTO{
 		FirstName: user.FirstName,
 		LastName: user.LastName,
+		AddressCode: user.Address.Code,
 		Country: user.Address.Country,
 	}
 }

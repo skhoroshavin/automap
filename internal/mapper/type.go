@@ -25,6 +25,14 @@ func (l ProviderList) FindAccessor(name string, typeName string) string {
 			continue
 		}
 
+		if strings.HasPrefix(strings.ToLower(name), strings.ToLower(p.Name)) {
+			name := name[len(p.Name):]
+			sub := p.Type.FindAccessor(name, typeName)
+			if sub != "" {
+				return fmt.Sprintf("%s.%s", p.Name, sub)
+			}
+		}
+
 		sub := p.Type.FindAccessor(name, typeName)
 		if sub != "" {
 			return fmt.Sprintf("%s.%s", p.Name, sub)
