@@ -1,7 +1,7 @@
-package mapper
+package oldmapper
 
 import (
-	"github.com/skhoroshavin/automap/internal/core"
+	"github.com/skhoroshavin/automap/internal/mapper"
 	"github.com/skhoroshavin/automap/internal/parser"
 	"go/types"
 )
@@ -24,6 +24,6 @@ func NewMapper(mapper *parser.Mapper, typeInfo *types.Info) (res *Mapper, err er
 type Mapper struct {
 	Name     string
 	FromName string
-	FromType core.Type
-	ToType   core.Type
+	FromType mapper.Type
+	ToType   mapper.Type
 }

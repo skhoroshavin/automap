@@ -7,9 +7,9 @@ type Package struct {
 	Mappers []*Mapper
 }
 
-// Mapper represents mapper
+// Mapper represents oldmapper
 type Mapper struct {
-	// Signature is a mapper signature (TODO: Make it an object)
+	// Signature is a oldmapper signature (TODO: Make it an object)
 	Signature string
 	// Vars is a list of variable assignments
 	Vars []Variable
@@ -17,7 +17,7 @@ type Mapper struct {
 	Result Expr
 }
 
-// Variable represents local variable in a mapper
+// Variable represents local variable in a oldmapper
 type Variable struct {
 	Name  string
 	Value Expr

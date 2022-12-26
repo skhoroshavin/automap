@@ -2,14 +2,14 @@ package writer
 
 import (
 	"fmt"
-	"github.com/skhoroshavin/automap/internal/core"
-	"github.com/skhoroshavin/automap/internal/core/ast"
 	"github.com/skhoroshavin/automap/internal/mapper"
+	"github.com/skhoroshavin/automap/internal/mapper/ast"
+	"github.com/skhoroshavin/automap/internal/oldmapper"
 	"io"
 )
 
-func writeOldMapper(out io.Writer, oldMapper *mapper.Mapper) error {
-	node := oldMapper.ToType.BuildMapper(core.ProviderList{
+func writeOldMapper(out io.Writer, oldMapper *oldmapper.Mapper) error {
+	node := oldMapper.ToType.BuildMapper(mapper.ProviderList{
 		{Name: oldMapper.FromName, Type: oldMapper.FromType},
 	})
 	if node == nil {

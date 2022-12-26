@@ -1,11 +1,11 @@
 package writer
 
 import (
-	"github.com/skhoroshavin/automap/internal/mapper"
+	"github.com/skhoroshavin/automap/internal/oldmapper"
 	"io"
 )
 
-func Write(out io.Writer, reg *mapper.Registry) (err error) {
+func Write(out io.Writer, reg *oldmapper.Registry) (err error) {
 	err = writeHeader(out, reg.Package())
 	if err != nil {
 		return

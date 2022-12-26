@@ -2,7 +2,7 @@ package writer
 
 import (
 	"fmt"
-	"github.com/skhoroshavin/automap/internal/core/ast"
+	"github.com/skhoroshavin/automap/internal/mapper/ast"
 	"io"
 )
 

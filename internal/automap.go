@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"github.com/skhoroshavin/automap/internal/mapper"
+	"github.com/skhoroshavin/automap/internal/oldmapper"
 	"github.com/skhoroshavin/automap/internal/parser"
 	"github.com/skhoroshavin/automap/internal/writer"
 	"io"
@@ -13,7 +13,7 @@ func AutoMap(out io.Writer, dir string) error {
 		return err
 	}
 
-	mappings, err := mapper.New(parseRes)
+	mappings, err := oldmapper.New(parseRes)
 	if err != nil {
 		return nil
 	}

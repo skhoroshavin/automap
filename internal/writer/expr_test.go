@@ -2,7 +2,7 @@ package writer
 
 import (
 	"bytes"
-	"github.com/skhoroshavin/automap/internal/core/ast"
+	"github.com/skhoroshavin/automap/internal/mapper/ast"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )

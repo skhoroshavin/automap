@@ -3,13 +3,13 @@ package writer
 import (
 	"errors"
 	"fmt"
-	"github.com/skhoroshavin/automap/internal/core/ast"
+	"github.com/skhoroshavin/automap/internal/mapper/ast"
 	"io"
 )
 
 func writeMapper(out io.Writer, mapper *ast.Mapper) (err error) {
 	if mapper.Result == nil {
-		return errors.New("mapper has empty return statement")
+		return errors.New("oldmapper has empty return statement")
 	}
 
 	_, err = fmt.Fprintf(out, "\n%s {\n", mapper.Signature)

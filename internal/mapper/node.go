@@ -1,6 +1,6 @@
-package core
+package mapper
 
-import "github.com/skhoroshavin/automap/internal/core/ast"
+import "github.com/skhoroshavin/automap/internal/mapper/ast"
 
 type Node interface {
 	Build(*ast.Mapper) ast.Expr
