@@ -3,31 +3,24 @@ package parser
 import (
 	"fmt"
 	"github.com/skhoroshavin/automap/internal/mapper"
-	"go/ast"
 	"go/types"
 	"strings"
 )
 
-func oldParseType(typeExpr ast.Expr, typeInfo *types.Info, pkg *Package, imports Imports) (mapper.Type, error) {
+func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error) {
 	isPointer := false
-
-	// Dereference pointer if needed
-	if starExpr, ok := typeExpr.(*ast.StarExpr); ok {
+	if ptr, ok := t.(*types.Pointer); ok {
 		isPointer = true
-		typeExpr = starExpr.X
+		t = ptr.Elem()
 	}
 
-	// Name
-	name := nodeToString(typeExpr)
-
-	// Get type
-	typ := typeInfo.TypeOf(typeExpr)
-	if typ == nil {
-		return nil, fmt.Errorf("unknown type %s", name)
+	name, err := parseTypeName(t.String(), pkg, imports)
+	if err != nil {
+		return nil, err
 	}
 
 	var ok bool
-	namedType, ok := typ.(*types.Named)
+	namedType, ok := t.(*types.Named)
 	if !ok {
 		return &mapper.OpaqueType{Name_: name}, nil
 	}
@@ -83,15 +76,6 @@ func oldParseType(typeExpr ast.Expr, typeInfo *types.Info, pkg *Package, imports
 	}
 
 	return res, nil
-}
-
-func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error) {
-	name, err := parseTypeName(t.String(), pkg, imports)
-	if err != nil {
-		return nil, err
-	}
-
-	return &mapper.OpaqueType{Name_: name}, nil
 }
 
 func parseTypeName(typeId string, pkg *Package, imports Imports) (string, error) {

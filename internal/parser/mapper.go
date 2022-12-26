@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/skhoroshavin/automap/internal/mapper"
 	"go/ast"
 	"go/types"
@@ -65,13 +66,26 @@ func buildMapperConfig(src *Mapper, typeInfo *types.Info, pkg *Package, imports 
 	res = new(mapper.Config)
 	res.Name = src.Name
 	res.FromName = src.From.Name
-	res.FromType, err = oldParseType(src.From.Type, typeInfo, pkg, imports)
+
+	fromType := typeInfo.TypeOf(src.From.Type)
+	if fromType == nil {
+		err = fmt.Errorf("type %s not found", nodeToString(src.From.Type))
+		return
+	}
+	res.FromType, err = parseType(fromType, pkg, imports)
 	if err != nil {
 		return
 	}
-	res.ToType, err = oldParseType(src.To.Type, typeInfo, pkg, imports)
+
+	toType := typeInfo.TypeOf(src.To.Type)
+	if toType == nil {
+		err = fmt.Errorf("type %s not found", nodeToString(src.To.Type))
+		return
+	}
+	res.ToType, err = parseType(toType, pkg, imports)
 	if err != nil {
 		return
 	}
+
 	return
 }
