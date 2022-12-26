@@ -1,6 +1,9 @@
 package core
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Provider struct {
 	Name string
@@ -11,11 +14,19 @@ type ProviderList []Provider
 
 func (l ProviderList) FindAccessor(name string, typeName string) string {
 	for _, p := range l {
-		if strings.ToLower(p.Name) != strings.ToLower(name) && name != "" {
+		if p.Type.Name() == typeName {
+			if name == "" {
+				return p.Name
+			}
+			if strings.ToLower(name) == strings.ToLower(p.Name) {
+				return p.Name
+			}
 			continue
 		}
-		if p.Type.Name() == typeName {
-			return p.Name
+
+		sub := p.Type.FindAccessor(name, typeName)
+		if sub != "" {
+			return fmt.Sprintf("%s.%s", p.Name, sub)
 		}
 	}
 	return ""
@@ -41,8 +52,8 @@ func (t *OpaqueType) FindAccessor(name string, typeName string) string {
 type StructType struct {
 	Name_     string
 	IsPointer bool
-	Fields    []Provider
-	Getters   []Provider
+	Fields    ProviderList
+	Getters   ProviderList
 }
 
 func (t *StructType) Name() string {
@@ -50,7 +61,7 @@ func (t *StructType) Name() string {
 }
 
 func (t *StructType) FindAccessor(name string, typeName string) string {
-	return ""
+	return t.Fields.FindAccessor(name, typeName)
 }
 
 func (t *StructType) BuildMapper(args ProviderList) Node {
