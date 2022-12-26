@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 	"github.com/skhoroshavin/automap/internal/mapper"
-	"github.com/skhoroshavin/automap/internal/utils"
 	"go/ast"
 	"go/types"
 )
@@ -18,7 +17,7 @@ func parseType(typeExpr ast.Expr, typeInfo *types.Info) (mapper.Type, error) {
 	}
 
 	// Name
-	name := utils.AST2String(typeExpr)
+	name := nodeToString(typeExpr)
 
 	// Get type
 	typ := typeInfo.TypeOf(typeExpr)

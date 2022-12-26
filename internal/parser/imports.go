@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"github.com/skhoroshavin/automap/internal/utils"
 	"go/ast"
 	"strings"
 )
@@ -20,6 +19,6 @@ func mergeImports(imports Imports, file *ast.File) {
 		if strings.HasSuffix(spec.Path.Value, `/automap"`) {
 			continue
 		}
-		imports[utils.AST2String(spec)] = struct{}{}
+		imports[nodeToString(spec)] = struct{}{}
 	}
 }
