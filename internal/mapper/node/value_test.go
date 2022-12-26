@@ -12,11 +12,16 @@ func TestValue(t *testing.T) {
 
 type ValueSuite struct {
 	suite.Suite
+	mapper *ast.Mapper
+}
+
+func (s *ValueSuite) SetupTest() {
+	s.mapper = new(ast.Mapper)
 }
 
 func (s *ValueSuite) TestValueBuildsSimpleReturnStatement() {
-	body := build(NewValue("42"))
+	NewValue("42").CompileTo(s.mapper)
 
-	s.Assert().Empty(body.Vars)
-	s.Assert().Equal(ast.NewValue("42"), body.Result)
+	s.Assert().Empty(s.mapper.Vars)
+	s.Assert().Equal(ast.NewValue("42"), s.mapper.Result)
 }

@@ -35,16 +35,16 @@ type Field struct {
 	value Node
 }
 
-func (s *Struct) Build(mapper *ast.Mapper) ast.Expr {
-	res := &ast.StructExpr{
-		Name:      s.name,
-		IsPointer: s.isPointer,
-		Fields:    make([]*ast.Field, len(s.fields)),
-	}
-
+func (s *Struct) CompileTo(mapper *ast.Mapper) {
+	fields := make([]*ast.Field, len(s.fields))
 	for i, field := range s.fields {
-		res.Fields[i] = ast.NewField(field.name, field.value.Build(mapper))
+		field.value.CompileTo(mapper)
+		fields[i] = ast.NewField(field.name, mapper.Result)
 	}
 
-	return res
+	if s.isPointer {
+		mapper.Result = ast.NewStructPtr(s.name, fields...)
+	} else {
+		mapper.Result = ast.NewStruct(s.name, fields...)
+	}
 }

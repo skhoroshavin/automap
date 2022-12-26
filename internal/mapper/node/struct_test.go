@@ -12,53 +12,58 @@ func TestStruct(t *testing.T) {
 
 type StructSuite struct {
 	suite.Suite
+	mapper *ast.Mapper
+}
+
+func (s *StructSuite) SetupTest() {
+	s.mapper = new(ast.Mapper)
 }
 
 func (s *StructSuite) TestStructBuildsSimpleReturnStatement() {
-	body := build(NewStruct(
+	NewStruct(
 		"Answer",
 		NewField("Question", NewValue("\"wtf\"")),
 		NewField("Value", NewValue("42")),
-	))
+	).CompileTo(s.mapper)
 
-	s.Assert().Empty(body.Vars)
+	s.Assert().Empty(s.mapper.Vars)
 
 	expected := ast.NewStruct(
 		"Answer",
 		ast.NewField("Question", ast.NewValue("\"wtf\"")),
 		ast.NewField("Value", ast.NewValue("42")),
 	)
-	s.Assert().Equal(expected, body.Result)
+	s.Assert().Equal(expected, s.mapper.Result)
 }
 
 func (s *StructSuite) TestPointerStructBuildsSimpleReturnStatement() {
-	body := build(NewStructPtr(
+	NewStructPtr(
 		"Answer",
 		NewField("Question", NewValue("\"wtf\"")),
 		NewField("Value", NewValue("42")),
-	))
+	).CompileTo(s.mapper)
 
-	s.Assert().Empty(body.Vars)
+	s.Assert().Empty(s.mapper.Vars)
 
 	expected := ast.NewStructPtr(
 		"Answer",
 		ast.NewField("Question", ast.NewValue("\"wtf\"")),
 		ast.NewField("Value", ast.NewValue("42")),
 	)
-	s.Assert().Equal(expected, body.Result)
+	s.Assert().Equal(expected, s.mapper.Result)
 }
 
 func (s *StructSuite) TestNestedStructBuildsSimpleReturnStatement() {
-	body := build(NewStruct(
+	NewStruct(
 		"Question",
 		NewField("Value", NewValue("\"wtf\"")),
 		NewField("Answer", NewStructPtr(
 			"Answer",
 			NewField("Value", NewValue("42")),
 		)),
-	))
+	).CompileTo(s.mapper)
 
-	s.Assert().Empty(body.Vars)
+	s.Assert().Empty(s.mapper.Vars)
 
 	expected := ast.NewStruct(
 		"Question",
@@ -68,5 +73,5 @@ func (s *StructSuite) TestNestedStructBuildsSimpleReturnStatement() {
 			ast.NewField("Value", ast.NewValue("42")),
 		)),
 	)
-	s.Assert().Equal(expected, body.Result)
+	s.Assert().Equal(expected, s.mapper.Result)
 }

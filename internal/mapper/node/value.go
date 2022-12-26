@@ -10,6 +10,6 @@ type Value struct {
 	v string
 }
 
-func (v *Value) Build(_ *ast.Mapper) ast.Expr {
-	return &ast.ValueExpr{Value: v.v}
+func (v *Value) CompileTo(mapper *ast.Mapper) {
+	mapper.Result = ast.NewValue(v.v)
 }

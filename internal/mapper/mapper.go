@@ -32,7 +32,7 @@ func Build(cfg *Config) (*ast.Mapper, error) {
 			cfg.ToType.Name(),
 		),
 	}
-	mapper.Result = node.Build(mapper)
+	node.CompileTo(mapper)
 
 	return mapper, nil
 }
