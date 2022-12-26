@@ -11,7 +11,7 @@ func OldWrite(out io.Writer, reg *oldmapper.Registry) (err error) {
 		return
 	}
 
-	err = writeOldImports(out, reg.Imports())
+	err = writeImports(out, reg.Imports())
 	if err != nil {
 		return
 	}
