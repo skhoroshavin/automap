@@ -2,16 +2,16 @@ package writer
 
 import (
 	"fmt"
-	"github.com/skhoroshavin/automap/internal/core"
+	"github.com/skhoroshavin/automap/internal/mapper/ast"
 	"io"
 )
 
-func writeExpr(out io.Writer, expr core.Expr, indent int) (err error) {
+func writeExpr(out io.Writer, expr ast.Expr, indent int) (err error) {
 	switch x := expr.(type) {
-	case *core.ValueExpr:
+	case *ast.ValueExpr:
 		_, err = fmt.Fprint(out, x.Value)
 		return
-	case *core.StructExpr:
+	case *ast.StructExpr:
 		err = writeStructExpr(out, x, indent)
 		return
 	default:
@@ -20,7 +20,7 @@ func writeExpr(out io.Writer, expr core.Expr, indent int) (err error) {
 	}
 }
 
-func writeStructExpr(out io.Writer, strct *core.StructExpr, indent int) (err error) {
+func writeStructExpr(out io.Writer, strct *ast.StructExpr, indent int) (err error) {
 	if strct.IsPointer {
 		_, err = fmt.Fprint(out, "&")
 		if err != nil {

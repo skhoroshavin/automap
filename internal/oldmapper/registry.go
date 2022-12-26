@@ -1,4 +1,4 @@
-package mapper
+package oldmapper
 
 import (
 	"github.com/skhoroshavin/automap/internal/parser"

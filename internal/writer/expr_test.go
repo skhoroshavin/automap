@@ -2,7 +2,7 @@ package writer
 
 import (
 	"bytes"
-	"github.com/skhoroshavin/automap/internal/core"
+	"github.com/skhoroshavin/automap/internal/mapper/ast"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -21,20 +21,18 @@ func (s *WriteExprSuite) SetupTest() {
 }
 
 func (s *WriteExprSuite) TestWriteValueExpr() {
-	err := writeExpr(s.out, &core.ValueExpr{Value: "42"}, 1)
+	err := writeExpr(s.out, ast.NewValue("42"), 1)
 	s.Assert().NoError(err)
 
 	s.Assert().Equal("42", s.out.String())
 }
 
 func (s *WriteExprSuite) TestStructExpr() {
-	err := writeExpr(s.out, &core.StructExpr{
-		Name: "Answer",
-		Fields: []core.FieldExpr{
-			{Name: "Question", Value: &core.ValueExpr{Value: "\"wtf\""}},
-			{Name: "Value", Value: &core.ValueExpr{Value: "42"}},
-		},
-	}, 1)
+	err := writeExpr(s.out, ast.NewStruct(
+		"Answer",
+		ast.NewField("Question", ast.NewValue("\"wtf\"")),
+		ast.NewField("Value", ast.NewValue("42")),
+	), 1)
 	s.Assert().NoError(err)
 
 	expected := `Answer{
@@ -45,14 +43,11 @@ func (s *WriteExprSuite) TestStructExpr() {
 }
 
 func (s *WriteExprSuite) TestPointerStructExpr() {
-	err := writeExpr(s.out, &core.StructExpr{
-		Name:      "Answer",
-		IsPointer: true,
-		Fields: []core.FieldExpr{
-			{Name: "Question", Value: &core.ValueExpr{Value: "\"wtf\""}},
-			{Name: "Value", Value: &core.ValueExpr{Value: "42"}},
-		},
-	}, 1)
+	err := writeExpr(s.out, ast.NewStructPtr(
+		"Answer",
+		ast.NewField("Question", ast.NewValue("\"wtf\"")),
+		ast.NewField("Value", ast.NewValue("42")),
+	), 1)
 	s.Assert().NoError(err)
 
 	expected := `&Answer{
@@ -63,17 +58,14 @@ func (s *WriteExprSuite) TestPointerStructExpr() {
 }
 
 func (s *WriteExprSuite) TestNestedStructExpr() {
-	err := writeExpr(s.out, &core.StructExpr{
+	err := writeExpr(s.out, &ast.StructExpr{
 		Name: "Question",
-		Fields: []core.FieldExpr{
-			{Name: "Value", Value: &core.ValueExpr{Value: "\"wtf\""}},
-			{Name: "Answer", Value: &core.StructExpr{
-				Name:      "Answer",
-				IsPointer: true,
-				Fields: []core.FieldExpr{
-					{Name: "Value", Value: &core.ValueExpr{Value: "42"}},
-				},
-			}},
+		Fields: []ast.Field{
+			ast.NewField("Value", ast.NewValue("\"wtf\"")),
+			ast.NewField("Answer", ast.NewStructPtr(
+				"Answer",
+				ast.NewField("Value", ast.NewValue("42")),
+			)),
 		},
 	}, 1)
 	s.Assert().NoError(err)

@@ -1,6 +1,7 @@
-package core
+package mapper
 
 import (
+	"github.com/skhoroshavin/automap/internal/mapper/ast"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -17,7 +18,7 @@ func (s *NodeSuite) TestValueBuildsSimpleReturnStatement() {
 	body := BuildFuncBody(&ValueNode{Value: "42"})
 
 	s.Assert().Empty(body.Vars)
-	s.Assert().Equal(&ValueExpr{Value: "42"}, body.Result)
+	s.Assert().Equal(ast.NewValue("42"), body.Result)
 }
 
 func (s *NodeSuite) TestStructBuildsSimpleReturnStatement() {
@@ -31,13 +32,11 @@ func (s *NodeSuite) TestStructBuildsSimpleReturnStatement() {
 
 	s.Assert().Empty(body.Vars)
 
-	expected := &StructExpr{
-		Name: "Answer",
-		Fields: []FieldExpr{
-			{Name: "Question", Value: &ValueExpr{Value: "\"wtf\""}},
-			{Name: "Value", Value: &ValueExpr{Value: "42"}},
-		},
-	}
+	expected := ast.NewStruct(
+		"Answer",
+		ast.NewField("Question", ast.NewValue("\"wtf\"")),
+		ast.NewField("Value", ast.NewValue("42")),
+	)
 	s.Assert().Equal(expected, body.Result)
 }
 
@@ -53,14 +52,11 @@ func (s *NodeSuite) TestPointerStructBuildsSimpleReturnStatement() {
 
 	s.Assert().Empty(body.Vars)
 
-	expected := &StructExpr{
-		Name:      "Answer",
-		IsPointer: true,
-		Fields: []FieldExpr{
-			{Name: "Question", Value: &ValueExpr{Value: "\"wtf\""}},
-			{Name: "Value", Value: &ValueExpr{Value: "42"}},
-		},
-	}
+	expected := ast.NewStructPtr(
+		"Answer",
+		ast.NewField("Question", ast.NewValue("\"wtf\"")),
+		ast.NewField("Value", ast.NewValue("42")),
+	)
 	s.Assert().Equal(expected, body.Result)
 }
 
@@ -81,18 +77,13 @@ func (s *NodeSuite) TestNestedStructBuildsSimpleReturnStatement() {
 
 	s.Assert().Empty(body.Vars)
 
-	expected := &StructExpr{
-		Name: "Question",
-		Fields: []FieldExpr{
-			{Name: "Value", Value: &ValueExpr{Value: "\"wtf\""}},
-			{Name: "Answer", Value: &StructExpr{
-				Name:      "Answer",
-				IsPointer: true,
-				Fields: []FieldExpr{
-					{Name: "Value", Value: &ValueExpr{Value: "42"}},
-				},
-			}},
-		},
-	}
+	expected := ast.NewStruct(
+		"Question",
+		ast.NewField("Value", ast.NewValue("\"wtf\"")),
+		ast.NewField("Answer", ast.NewStructPtr(
+			"Answer",
+			ast.NewField("Value", ast.NewValue("42")),
+		)),
+	)
 	s.Assert().Equal(expected, body.Result)
 }

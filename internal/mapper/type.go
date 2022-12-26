@@ -2,74 +2,116 @@ package mapper
 
 import (
 	"fmt"
-	"github.com/skhoroshavin/automap/internal/core"
-	"github.com/skhoroshavin/automap/internal/utils"
-	"go/ast"
-	"go/types"
+	"strings"
 )
 
-func ParseType(typeExpr ast.Expr, typeInfo *types.Info) (core.Type, error) {
-	isPointer := false
+type Provider struct {
+	Name string
+	Type Type
+}
 
-	// Dereference pointer if needed
-	if starExpr, ok := typeExpr.(*ast.StarExpr); ok {
-		isPointer = true
-		typeExpr = starExpr.X
-	}
+type ProviderList []Provider
 
-	// Name
-	name := utils.AST2String(typeExpr)
-
-	// Get type
-	typ := typeInfo.TypeOf(typeExpr)
-	if typ == nil {
-		return nil, fmt.Errorf("unknown type %s", name)
-	}
-
-	var ok bool
-	namedType, ok := typ.(*types.Named)
-	if !ok {
-		return &core.OpaqueType{Name_: name}, nil
-	}
-
-	structType, ok := namedType.Underlying().(*types.Struct)
-	if !ok {
-		return &core.OpaqueType{Name_: name}, nil
-	}
-
-	res := &core.StructType{
-		Name_:      name,
-		IsPointer_: isPointer,
-		Fields:     make(core.ProviderList, 0, structType.NumFields()),
-		Getters:    make(core.ProviderList, 0, namedType.NumMethods()),
-	}
-	for i := 0; i != structType.NumFields(); i++ {
-		field := structType.Field(i)
-		if !field.Exported() {
+func (l ProviderList) FindAccessor(name string, typeName string) string {
+	for _, p := range l {
+		if p.Type.Name() == typeName {
+			if name == "" {
+				return p.Name
+			}
+			if strings.ToLower(name) == strings.ToLower(p.Name) {
+				return p.Name
+			}
 			continue
 		}
-		res.Fields = append(res.Fields, core.Provider{
-			Name: field.Name(),
-			Type: &core.OpaqueType{Name_: field.Type().String()},
-		})
+
+		sub := p.Type.FindAccessor(name, typeName)
+		if sub != "" {
+			return fmt.Sprintf("%s.%s", p.Name, sub)
+		}
 	}
-	for i := 0; i != namedType.NumMethods(); i++ {
-		method := namedType.Method(i)
-		sig, ok := method.Type().(*types.Signature)
-		if !ok {
-			continue
-		}
-		if sig.Results().Len() != 1 {
-			continue
-		}
-		if sig.Params().Len() != 0 {
-			continue
-		}
-		res.Getters = append(res.Getters, core.Provider{
-			Name: method.Name(),
-			Type: &core.OpaqueType{Name_: sig.Results().At(0).Type().String()},
-		})
+	return ""
+}
+
+type Type interface {
+	Name() string
+	IsPointer() bool // TODO: Remove
+	FindAccessor(name string, typeName string) string
+	BuildMapper(args ProviderList) Node
+}
+
+type OpaqueType struct {
+	Name_ string
+}
+
+func (t *OpaqueType) Name() string {
+	return t.Name_
+}
+
+func (t *OpaqueType) IsPointer() bool {
+	return false
+}
+
+func (t *OpaqueType) FindAccessor(name string, typeName string) string {
+	return ""
+}
+
+func (t *OpaqueType) BuildMapper(args ProviderList) Node {
+	accessor := args.FindAccessor("", t.Name_)
+	if accessor != "" {
+		return &ValueNode{Value: accessor}
 	}
 
-	return res, nil
+	return nil
+}
+
+type StructType struct {
+	Name_      string
+	IsPointer_ bool
+	Fields     ProviderList
+	Getters    ProviderList
+}
+
+func (t *StructType) Name() string {
+	return t.Name_
+}
+
+func (t *StructType) IsPointer() bool {
+	return t.IsPointer_
+}
+
+func (t *StructType) FindAccessor(name string, typeName string) string {
+	res := t.Fields.FindAccessor(name, typeName)
+	if res != "" {
+		return res
+	}
+
+	res = t.Getters.FindAccessor(name, typeName)
+	if res != "" {
+		return fmt.Sprintf("%s()", res)
+	}
+
+	return ""
+}
+
+func (t *StructType) BuildMapper(args ProviderList) Node {
+	accessor := args.FindAccessor("", t.Name_)
+	if accessor != "" {
+		return &ValueNode{Value: accessor}
+	}
+
+	res := &StructNode{
+		Name:      t.Name(),
+		IsPointer: t.IsPointer(),
+		Fields:    make([]NamedNode, len(t.Fields)),
+	}
+	for i, v := range t.Fields {
+		accessor := args.FindAccessor(v.Name, v.Type.Name())
+		if accessor == "" {
+			return nil
+		}
+		res.Fields[i].Name = v.Name
+		res.Fields[i].Value = &ValueNode{Value: accessor}
+	}
+
+	return res
 }

@@ -1,4 +1,4 @@
-package core
+package mapper
 
 import (
 	"github.com/stretchr/testify/suite"
@@ -64,7 +64,7 @@ func (s *StructSuite) TestSimpleStructMapping() {
 		Getters: ProviderList{},
 	}
 	source := &StructType{
-		Name_: "core.Answer",
+		Name_: "mapper.Answer",
 		Fields: ProviderList{
 			{Name: "Value", Type: StringType},
 			{Name: "Question", Type: StringType},
