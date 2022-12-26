@@ -28,7 +28,7 @@ func (s *ParseSuite) TestPackageName() {
 }
 
 func (s *ParseSuite) TestImports() {
-	s.Assert().Equal([]string{
+	s.Assert().ElementsMatch([]string{
 		`"github.com/skhoroshavin/automap/internal/parser/test/another"`,
 		`some "github.com/skhoroshavin/automap/internal/parser/test/whatever"`,
 	}, s.cfg.Imports)
