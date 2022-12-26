@@ -1,4 +1,4 @@
-package oldmapper
+package parser
 
 import (
 	"fmt"
