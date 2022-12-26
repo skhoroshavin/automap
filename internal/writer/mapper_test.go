@@ -32,7 +32,8 @@ func (s *WriteMapperSuite) TestWriteMapperWithSimpleReturnStatement() {
 	})
 	s.Assert().NoError(err)
 
-	expected := `func GetAnswer() int {
+	expected := `
+func GetAnswer() int {
 	return 42
 }
 `
@@ -60,7 +61,8 @@ func (s *WriteMapperSuite) TestWriteMapperWithVariablesCreatesThemInOrderThenRet
 	})
 	s.Assert().NoError(err)
 
-	expected := `func GetAnswer() int {
+	expected := `
+func GetAnswer() int {
 	a := 20
 	b := a + 2
 	return a + b
@@ -87,7 +89,8 @@ func (s *WriteMapperSuite) TestWriteMapperHandlesComplexExpressions() {
 	})
 	s.Assert().NoError(err)
 
-	expected := `func GetQuestion() Question {
+	expected := `
+func GetQuestion() Question {
 	answer := &Answer{
 		Value: 42,
 	}

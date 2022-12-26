@@ -12,7 +12,7 @@ func writeMapper(out io.Writer, mapper *ast.Mapper) (err error) {
 		return errors.New("mapper has empty return statement")
 	}
 
-	_, err = fmt.Fprintf(out, "%s {\n", mapper.Signature)
+	_, err = fmt.Fprintf(out, "\n%s {\n", mapper.Signature)
 
 	for _, v := range mapper.Vars {
 		_, err = fmt.Fprintf(out, "\t%s := ", v.Name)

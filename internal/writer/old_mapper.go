@@ -3,40 +3,33 @@ package writer
 import (
 	"fmt"
 	"github.com/skhoroshavin/automap/internal/core"
+	"github.com/skhoroshavin/automap/internal/core/ast"
 	"github.com/skhoroshavin/automap/internal/mapper"
 	"io"
 )
 
-func writeOldMapper(out io.Writer, mapper *mapper.Mapper) (err error) {
-	_, err = fmt.Fprintf(
-		out,
-		"\nfunc %s(%s %s%s) %s%s {\n",
-		mapper.Name,
-		mapper.FromName,
-		ptr("*", mapper.FromType.IsPointer()),
-		mapper.FromType.Name(),
-		ptr("*", mapper.ToType.IsPointer()),
-		mapper.ToType.Name(),
-	)
-	if err != nil {
-		return
-	}
-
-	node := mapper.ToType.BuildMapper(core.ProviderList{
-		{Name: mapper.FromName, Type: mapper.FromType},
+func writeOldMapper(out io.Writer, oldMapper *mapper.Mapper) error {
+	node := oldMapper.ToType.BuildMapper(core.ProviderList{
+		{Name: oldMapper.FromName, Type: oldMapper.FromType},
 	})
 	if node == nil {
-		err = fmt.Errorf("failed to map from %s to %s", mapper.FromType.Name(), mapper.ToType.Name())
-		return
+		return fmt.Errorf("failed to map from %s to %s", oldMapper.FromType.Name(), oldMapper.ToType.Name())
 	}
 
-	err = writeMapper(out, core.BuildFuncBody(node))
-	if err != nil {
-		return
+	mapper := &ast.Mapper{
+		Signature: fmt.Sprintf(
+			"func %s(%s %s%s) %s%s",
+			oldMapper.Name,
+			oldMapper.FromName,
+			ptr("*", oldMapper.FromType.IsPointer()),
+			oldMapper.FromType.Name(),
+			ptr("*", oldMapper.ToType.IsPointer()),
+			oldMapper.ToType.Name(),
+		),
 	}
+	mapper.Result = node.Build(mapper)
 
-	_, err = fmt.Fprintln(out, "}")
-	return
+	return writeMapper(out, mapper)
 }
 
 func ptr(prefix string, isPointer bool) string {
