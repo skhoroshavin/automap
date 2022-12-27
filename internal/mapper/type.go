@@ -13,14 +13,19 @@ type Provider struct {
 
 type ProviderList []Provider
 
-func (l ProviderList) FindAccessor(name string, typeName string) string {
+func (l ProviderList) FindAccessor(name string, typeName string, isGetter bool) string {
 	for _, p := range l {
+		accessor := p.Name
+		if isGetter {
+			accessor = fmt.Sprintf("%s()", accessor)
+		}
+
 		if p.Type.Name() == typeName {
 			if name == "" {
-				return p.Name
+				return accessor
 			}
 			if strings.ToLower(name) == strings.ToLower(p.Name) {
-				return p.Name
+				return accessor
 			}
 			continue
 		}
@@ -29,13 +34,13 @@ func (l ProviderList) FindAccessor(name string, typeName string) string {
 			name := name[len(p.Name):]
 			sub := p.Type.FindAccessor(name, typeName)
 			if sub != "" {
-				return fmt.Sprintf("%s.%s", p.Name, sub)
+				return fmt.Sprintf("%s.%s", accessor, sub)
 			}
 		}
 
 		sub := p.Type.FindAccessor(name, typeName)
 		if sub != "" {
-			return fmt.Sprintf("%s.%s", p.Name, sub)
+			return fmt.Sprintf("%s.%s", accessor, sub)
 		}
 	}
 	return ""
@@ -65,7 +70,7 @@ func (t *OpaqueType) FindAccessor(name string, typeName string) string {
 }
 
 func (t *OpaqueType) BuildMapper(args ProviderList) (node.Node, error) {
-	accessor := args.FindAccessor("", t.Name_)
+	accessor := args.FindAccessor("", t.Name_, false)
 	if accessor != "" {
 		return node.NewValue(accessor), nil
 	}
@@ -89,28 +94,28 @@ func (t *StructType) IsPointer() bool {
 }
 
 func (t *StructType) FindAccessor(name string, typeName string) string {
-	res := t.Fields.FindAccessor(name, typeName)
+	res := t.Fields.FindAccessor(name, typeName, false)
 	if res != "" {
 		return res
 	}
 
-	res = t.Getters.FindAccessor(name, typeName)
+	res = t.Getters.FindAccessor(name, typeName, true)
 	if res != "" {
-		return fmt.Sprintf("%s()", res)
+		return res
 	}
 
 	return ""
 }
 
 func (t *StructType) BuildMapper(args ProviderList) (node.Node, error) {
-	accessor := args.FindAccessor("", t.Name_)
+	accessor := args.FindAccessor("", t.Name_, false)
 	if accessor != "" {
 		return node.NewValue(accessor), nil
 	}
 
 	fields := make([]*node.Field, len(t.Fields))
 	for i, v := range t.Fields {
-		accessor := args.FindAccessor(v.Name, v.Type.Name())
+		accessor := args.FindAccessor(v.Name, v.Type.Name(), false)
 		if accessor == "" {
 			return nil, fmt.Errorf("no accessor found for field %s %s", v.Name, v.Type.Name())
 		}
