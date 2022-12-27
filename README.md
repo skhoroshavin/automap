@@ -67,10 +67,15 @@ file with roughly following contents:
 package mypackage
 
 func UserToDTO(user *User) *UserDTO {
-	return &UserDTO{
-		FirstName: user.FirstName,
-		LastName: user.LastName,   
-	}
+    return &UserDTO{
+        FirstName: user.FirstName,
+        LastName: user.LastName,
+        AddressCode: user.Address.Code,
+        StreetAndCity: user.Address.StreetAndCity(),
+        Country: user.Address.Country,
+        PrefsGolang: user.Prefs().Golang,
+        PrefsCompiled: user.Prefs().Compiled(),
+    }
 }
 ```
 
@@ -83,6 +88,7 @@ Note that:
 * it doesn't import anything related to `automap` anymore
 * generated mapper has same signature as initial stub, and contains explicit
   mapping of fields that have matching names
+* matching is smart enough to use getters or nested queries if needed
 * if target type has fields that cannot be matched to any of inputs mapping
   generation will fail - this will prevent accidentally creating incomplete
   mappings
