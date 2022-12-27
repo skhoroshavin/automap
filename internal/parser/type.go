@@ -22,12 +22,12 @@ func parseType(t gotypes.Type, pkg *Package, imports Imports) (types.Type, error
 	var ok bool
 	namedType, ok := t.(*gotypes.Named)
 	if !ok {
-		return &types.Opaque{Name_: name}, nil
+		return types.NewOpaque(name), nil
 	}
 
 	structType, ok := namedType.Underlying().(*gotypes.Struct)
 	if !ok {
-		return &types.Opaque{Name_: name}, nil
+		return types.NewOpaque(name), nil
 	}
 
 	res := &types.Struct{

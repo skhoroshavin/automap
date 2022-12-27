@@ -14,14 +14,12 @@ type StructSuite struct {
 	suite.Suite
 }
 
-var StringType = &Opaque{Name_: "string"}
-
 func (s *StructSuite) TestDirectMapping() {
 	strct := &Struct{
 		Name_: "Answer",
 		Fields: ProviderList{
-			{Name: "Value", Type: StringType},
-			{Name: "Question", Type: StringType},
+			{Name: "Value", Type: NewOpaque("string")},
+			{Name: "Question", Type: NewOpaque("string")},
 		},
 		Getters: ProviderList{},
 	}
@@ -37,14 +35,14 @@ func (s *StructSuite) TestArgsMapping() {
 	strct := &Struct{
 		Name_: "Answer",
 		Fields: ProviderList{
-			{Name: "Value", Type: StringType},
-			{Name: "Question", Type: StringType},
+			{Name: "Value", Type: NewOpaque("string")},
+			{Name: "Question", Type: NewOpaque("string")},
 		},
 		Getters: ProviderList{},
 	}
 	mapper, err := strct.BuildMapper(ProviderList{
-		{Name: "question", Type: StringType},
-		{Name: "value", Type: StringType},
+		{Name: "question", Type: NewOpaque("string")},
+		{Name: "value", Type: NewOpaque("string")},
 	})
 
 	s.Assert().NoError(err)
@@ -59,17 +57,17 @@ func (s *StructSuite) TestSimpleStructMapping() {
 	target := &Struct{
 		Name_: "Answer",
 		Fields: ProviderList{
-			{Name: "Value", Type: StringType},
-			{Name: "Question", Type: StringType},
+			{Name: "Value", Type: NewOpaque("string")},
+			{Name: "Question", Type: NewOpaque("string")},
 		},
 		Getters: ProviderList{},
 	}
 	source := &Struct{
 		Name_: "mapper.Answer",
 		Fields: ProviderList{
-			{Name: "Value", Type: StringType},
-			{Name: "Question", Type: StringType},
-			{Name: "Reason", Type: StringType},
+			{Name: "Value", Type: NewOpaque("string")},
+			{Name: "Question", Type: NewOpaque("string")},
+			{Name: "Reason", Type: NewOpaque("string")},
 		},
 		Getters: ProviderList{},
 	}
