@@ -1,4 +1,4 @@
-package mapper
+package types
 
 import (
 	"github.com/skhoroshavin/automap/internal/mapper/node"
@@ -14,10 +14,10 @@ type StructSuite struct {
 	suite.Suite
 }
 
-var StringType = &OpaqueType{Name_: "string"}
+var StringType = &Opaque{Name_: "string"}
 
 func (s *StructSuite) TestDirectMapping() {
-	strct := &StructType{
+	strct := &Struct{
 		Name_: "Answer",
 		Fields: ProviderList{
 			{Name: "Value", Type: StringType},
@@ -34,7 +34,7 @@ func (s *StructSuite) TestDirectMapping() {
 }
 
 func (s *StructSuite) TestArgsMapping() {
-	strct := &StructType{
+	strct := &Struct{
 		Name_: "Answer",
 		Fields: ProviderList{
 			{Name: "Value", Type: StringType},
@@ -56,7 +56,7 @@ func (s *StructSuite) TestArgsMapping() {
 }
 
 func (s *StructSuite) TestSimpleStructMapping() {
-	target := &StructType{
+	target := &Struct{
 		Name_: "Answer",
 		Fields: ProviderList{
 			{Name: "Value", Type: StringType},
@@ -64,7 +64,7 @@ func (s *StructSuite) TestSimpleStructMapping() {
 		},
 		Getters: ProviderList{},
 	}
-	source := &StructType{
+	source := &Struct{
 		Name_: "mapper.Answer",
 		Fields: ProviderList{
 			{Name: "Value", Type: StringType},

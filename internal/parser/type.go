@@ -2,14 +2,14 @@ package parser
 
 import (
 	"fmt"
-	"github.com/skhoroshavin/automap/internal/mapper"
-	"go/types"
+	"github.com/skhoroshavin/automap/internal/mapper/types"
+	gotypes "go/types"
 	"strings"
 )
 
-func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error) {
+func parseType(t gotypes.Type, pkg *Package, imports Imports) (types.Type, error) {
 	isPointer := false
-	if ptr, ok := t.(*types.Pointer); ok {
+	if ptr, ok := t.(*gotypes.Pointer); ok {
 		isPointer = true
 		t = ptr.Elem()
 	}
@@ -20,21 +20,21 @@ func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error)
 	}
 
 	var ok bool
-	namedType, ok := t.(*types.Named)
+	namedType, ok := t.(*gotypes.Named)
 	if !ok {
-		return &mapper.OpaqueType{Name_: name}, nil
+		return &types.Opaque{Name_: name}, nil
 	}
 
-	structType, ok := namedType.Underlying().(*types.Struct)
+	structType, ok := namedType.Underlying().(*gotypes.Struct)
 	if !ok {
-		return &mapper.OpaqueType{Name_: name}, nil
+		return &types.Opaque{Name_: name}, nil
 	}
 
-	res := &mapper.StructType{
+	res := &types.Struct{
 		Name_:      name,
 		IsPointer_: isPointer,
-		Fields:     make(mapper.ProviderList, 0, structType.NumFields()),
-		Getters:    make(mapper.ProviderList, 0, namedType.NumMethods()),
+		Fields:     make(types.ProviderList, 0, structType.NumFields()),
+		Getters:    make(types.ProviderList, 0, namedType.NumMethods()),
 	}
 	for i := 0; i != structType.NumFields(); i++ {
 		field := structType.Field(i)
@@ -46,7 +46,7 @@ func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error)
 			return nil, err
 		}
 
-		res.Fields = append(res.Fields, mapper.Provider{
+		res.Fields = append(res.Fields, types.Provider{
 			Name: field.Name(),
 			Type: typ,
 		})
@@ -54,7 +54,7 @@ func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error)
 
 	for i := 0; i != namedType.NumMethods(); i++ {
 		method := namedType.Method(i)
-		sig, ok := method.Type().(*types.Signature)
+		sig, ok := method.Type().(*gotypes.Signature)
 		if !ok {
 			continue
 		}
@@ -69,7 +69,7 @@ func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error)
 			return nil, err
 		}
 
-		res.Getters = append(res.Getters, mapper.Provider{
+		res.Getters = append(res.Getters, types.Provider{
 			Name: method.Name(),
 			Type: typ,
 		})
