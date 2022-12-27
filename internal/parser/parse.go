@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/skhoroshavin/automap/internal/mapper"
 	"go/ast"
-	"go/types"
+	gotypes "go/types"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -67,7 +67,7 @@ func load(dir string) (res *packages.Package, err error) {
 	return
 }
 
-func findMappers(file *ast.File, typeInfo *types.Info, pkg *Package, imports Imports) (res []*mapper.Config) {
+func findMappers(file *ast.File, typeInfo *gotypes.Info, pkg *Package, imports Imports) (res []*mapper.Config) {
 	ast.Inspect(file, func(node ast.Node) bool {
 		switch x := node.(type) {
 		case *ast.File:

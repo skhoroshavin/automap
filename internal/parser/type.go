@@ -2,14 +2,14 @@ package parser
 
 import (
 	"fmt"
-	"github.com/skhoroshavin/automap/internal/mapper"
-	"go/types"
+	"github.com/skhoroshavin/automap/internal/mapper/types"
+	gotypes "go/types"
 	"strings"
 )
 
-func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error) {
+func parseType(t gotypes.Type, pkg *Package, imports Imports) (types.Type, error) {
 	isPointer := false
-	if ptr, ok := t.(*types.Pointer); ok {
+	if ptr, ok := t.(*gotypes.Pointer); ok {
 		isPointer = true
 		t = ptr.Elem()
 	}
@@ -20,22 +20,17 @@ func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error)
 	}
 
 	var ok bool
-	namedType, ok := t.(*types.Named)
+	namedType, ok := t.(*gotypes.Named)
 	if !ok {
-		return &mapper.OpaqueType{Name_: name}, nil
+		return types.NewOpaque(name), nil
 	}
 
-	structType, ok := namedType.Underlying().(*types.Struct)
+	structType, ok := namedType.Underlying().(*gotypes.Struct)
 	if !ok {
-		return &mapper.OpaqueType{Name_: name}, nil
+		return types.NewOpaque(name), nil
 	}
 
-	res := &mapper.StructType{
-		Name_:      name,
-		IsPointer_: isPointer,
-		Fields:     make(mapper.ProviderList, 0, structType.NumFields()),
-		Getters:    make(mapper.ProviderList, 0, namedType.NumMethods()),
-	}
+	fields := make(types.ProviderList, 0, structType.NumFields())
 	for i := 0; i != structType.NumFields(); i++ {
 		field := structType.Field(i)
 		if !field.Exported() {
@@ -46,15 +41,16 @@ func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error)
 			return nil, err
 		}
 
-		res.Fields = append(res.Fields, mapper.Provider{
+		fields = append(fields, types.Provider{
 			Name: field.Name(),
 			Type: typ,
 		})
 	}
 
+	getters := make(types.ProviderList, 0, namedType.NumMethods())
 	for i := 0; i != namedType.NumMethods(); i++ {
 		method := namedType.Method(i)
-		sig, ok := method.Type().(*types.Signature)
+		sig, ok := method.Type().(*gotypes.Signature)
 		if !ok {
 			continue
 		}
@@ -69,13 +65,17 @@ func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error)
 			return nil, err
 		}
 
-		res.Getters = append(res.Getters, mapper.Provider{
+		getters = append(getters, types.Provider{
 			Name: method.Name(),
 			Type: typ,
 		})
 	}
 
-	return res, nil
+	if isPointer {
+		return types.NewStructPtr(name, fields, getters), nil
+	} else {
+		return types.NewStruct(name, fields, getters), nil
+	}
 }
 
 func parseTypeName(typeId string, pkg *Package, imports Imports) (string, error) {

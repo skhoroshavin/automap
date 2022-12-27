@@ -1,4 +1,4 @@
-package mapper
+package types
 
 import (
 	"github.com/skhoroshavin/automap/internal/mapper/node"
@@ -14,16 +14,14 @@ type StructSuite struct {
 	suite.Suite
 }
 
-var StringType = &OpaqueType{Name_: "string"}
-
 func (s *StructSuite) TestDirectMapping() {
-	strct := &StructType{
-		Name_: "Answer",
-		Fields: ProviderList{
-			{Name: "Value", Type: StringType},
-			{Name: "Question", Type: StringType},
+	strct := &Struct{
+		name: "Answer",
+		fields: ProviderList{
+			{Name: "Value", Type: NewOpaque("string")},
+			{Name: "Question", Type: NewOpaque("string")},
 		},
-		Getters: ProviderList{},
+		getters: ProviderList{},
 	}
 	mapper, err := strct.BuildMapper([]Provider{
 		{Name: "answer", Type: strct},
@@ -34,17 +32,17 @@ func (s *StructSuite) TestDirectMapping() {
 }
 
 func (s *StructSuite) TestArgsMapping() {
-	strct := &StructType{
-		Name_: "Answer",
-		Fields: ProviderList{
-			{Name: "Value", Type: StringType},
-			{Name: "Question", Type: StringType},
+	strct := &Struct{
+		name: "Answer",
+		fields: ProviderList{
+			{Name: "Value", Type: NewOpaque("string")},
+			{Name: "Question", Type: NewOpaque("string")},
 		},
-		Getters: ProviderList{},
+		getters: ProviderList{},
 	}
 	mapper, err := strct.BuildMapper(ProviderList{
-		{Name: "question", Type: StringType},
-		{Name: "value", Type: StringType},
+		{Name: "question", Type: NewOpaque("string")},
+		{Name: "value", Type: NewOpaque("string")},
 	})
 
 	s.Assert().NoError(err)
@@ -56,22 +54,22 @@ func (s *StructSuite) TestArgsMapping() {
 }
 
 func (s *StructSuite) TestSimpleStructMapping() {
-	target := &StructType{
-		Name_: "Answer",
-		Fields: ProviderList{
-			{Name: "Value", Type: StringType},
-			{Name: "Question", Type: StringType},
+	target := &Struct{
+		name: "Answer",
+		fields: ProviderList{
+			{Name: "Value", Type: NewOpaque("string")},
+			{Name: "Question", Type: NewOpaque("string")},
 		},
-		Getters: ProviderList{},
+		getters: ProviderList{},
 	}
-	source := &StructType{
-		Name_: "mapper.Answer",
-		Fields: ProviderList{
-			{Name: "Value", Type: StringType},
-			{Name: "Question", Type: StringType},
-			{Name: "Reason", Type: StringType},
+	source := &Struct{
+		name: "mapper.Answer",
+		fields: ProviderList{
+			{Name: "Value", Type: NewOpaque("string")},
+			{Name: "Question", Type: NewOpaque("string")},
+			{Name: "Reason", Type: NewOpaque("string")},
 		},
-		Getters: ProviderList{},
+		getters: ProviderList{},
 	}
 	mapper, err := target.BuildMapper(ProviderList{
 		{Name: "v", Type: source},

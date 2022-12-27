@@ -3,18 +3,19 @@ package mapper
 import (
 	"fmt"
 	"github.com/skhoroshavin/automap/internal/mapper/ast"
+	"github.com/skhoroshavin/automap/internal/mapper/types"
 )
 
 // TODO: Make more generic
 type Config struct {
 	Name     string
 	FromName string
-	FromType Type
-	ToType   Type
+	FromType types.Type
+	ToType   types.Type
 }
 
 func Build(cfg *Config) (*ast.Mapper, error) {
-	node, err := cfg.ToType.BuildMapper(ProviderList{
+	node, err := cfg.ToType.BuildMapper(types.ProviderList{
 		{Name: cfg.FromName, Type: cfg.FromType},
 	})
 	if err != nil {

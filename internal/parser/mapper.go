@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/skhoroshavin/automap/internal/mapper"
 	"go/ast"
-	"go/types"
+	gotypes "go/types"
 )
 
 type Mapper struct {
@@ -62,7 +62,7 @@ func parseField(field *ast.Field) (res *Field) {
 	return
 }
 
-func buildMapperConfig(src *Mapper, typeInfo *types.Info, pkg *Package, imports Imports) (res *mapper.Config, err error) {
+func buildMapperConfig(src *Mapper, typeInfo *gotypes.Info, pkg *Package, imports Imports) (res *mapper.Config, err error) {
 	res = new(mapper.Config)
 	res.Name = src.Name
 	res.FromName = src.From.Name
