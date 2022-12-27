@@ -30,12 +30,7 @@ func parseType(t gotypes.Type, pkg *Package, imports Imports) (types.Type, error
 		return types.NewOpaque(name), nil
 	}
 
-	res := &types.Struct{
-		Name_:      name,
-		IsPointer_: isPointer,
-		Fields:     make(types.ProviderList, 0, structType.NumFields()),
-		Getters:    make(types.ProviderList, 0, namedType.NumMethods()),
-	}
+	fields := make(types.ProviderList, 0, structType.NumFields())
 	for i := 0; i != structType.NumFields(); i++ {
 		field := structType.Field(i)
 		if !field.Exported() {
@@ -46,12 +41,13 @@ func parseType(t gotypes.Type, pkg *Package, imports Imports) (types.Type, error
 			return nil, err
 		}
 
-		res.Fields = append(res.Fields, types.Provider{
+		fields = append(fields, types.Provider{
 			Name: field.Name(),
 			Type: typ,
 		})
 	}
 
+	getters := make(types.ProviderList, 0, namedType.NumMethods())
 	for i := 0; i != namedType.NumMethods(); i++ {
 		method := namedType.Method(i)
 		sig, ok := method.Type().(*gotypes.Signature)
@@ -69,13 +65,17 @@ func parseType(t gotypes.Type, pkg *Package, imports Imports) (types.Type, error
 			return nil, err
 		}
 
-		res.Getters = append(res.Getters, types.Provider{
+		getters = append(getters, types.Provider{
 			Name: method.Name(),
 			Type: typ,
 		})
 	}
 
-	return res, nil
+	if isPointer {
+		return types.NewStructPtr(name, fields, getters), nil
+	} else {
+		return types.NewStruct(name, fields, getters), nil
+	}
 }
 
 func parseTypeName(typeId string, pkg *Package, imports Imports) (string, error) {

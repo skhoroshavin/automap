@@ -5,28 +5,45 @@ import (
 	"github.com/skhoroshavin/automap/internal/mapper/node"
 )
 
+func NewStruct(name string, fields ProviderList, getters ProviderList) *Struct {
+	return &Struct{
+		name:    name,
+		fields:  fields,
+		getters: getters,
+	}
+}
+
+func NewStructPtr(name string, fields ProviderList, getters ProviderList) *Struct {
+	return &Struct{
+		name:      name,
+		isPointer: true,
+		fields:    fields,
+		getters:   getters,
+	}
+}
+
 type Struct struct {
-	Name_      string
-	IsPointer_ bool
-	Fields     ProviderList
-	Getters    ProviderList
+	name      string
+	isPointer bool
+	fields    ProviderList
+	getters   ProviderList
 }
 
 func (t *Struct) Name() string {
-	return t.Name_
+	return t.name
 }
 
 func (t *Struct) IsPointer() bool {
-	return t.IsPointer_
+	return t.isPointer
 }
 
 func (t *Struct) FindAccessor(name string, typeName string) string {
-	res := t.Fields.FindAccessor(name, typeName, false)
+	res := t.fields.FindAccessor(name, typeName, false)
 	if res != "" {
 		return res
 	}
 
-	res = t.Getters.FindAccessor(name, typeName, true)
+	res = t.getters.FindAccessor(name, typeName, true)
 	if res != "" {
 		return res
 	}
@@ -35,13 +52,13 @@ func (t *Struct) FindAccessor(name string, typeName string) string {
 }
 
 func (t *Struct) BuildMapper(args ProviderList) (node.Node, error) {
-	accessor := args.FindAccessor("", t.Name_, false)
+	accessor := args.FindAccessor("", t.name, false)
 	if accessor != "" {
 		return node.NewValue(accessor), nil
 	}
 
-	fields := make([]*node.Field, len(t.Fields))
-	for i, v := range t.Fields {
+	fields := make([]*node.Field, len(t.fields))
+	for i, v := range t.fields {
 		accessor := args.FindAccessor(v.Name, v.Type.Name(), false)
 		if accessor == "" {
 			return nil, fmt.Errorf("no accessor found for field %s %s", v.Name, v.Type.Name())
