@@ -1,74 +1,43 @@
 # Design
 
-**THIS IS IN "DESIGN RAMBLING" STAGE AND NOT YET IMPLEMENTED** 
+## Goals
 
-## Resolution
+1. Ease of use
+   * Tool must be really simple and intuitive to use, easier than writing
+     mappings manually
+2. Ease of development
+   * It should be as easy as possible to read, modify and reason about the
+     code, so that development could be more fun and take less effort,
+     also potentially attracting more contributors
+3. Performance of generated code
+   * It should be more or less comparable to hand-written mappers to improve
+     attractiveness of the tool. Also, good for reducing carbon footprint :) 
+   
+Note that performance of the code generator itself is generally 
+*not* a goal - unless it becomes a usability issue, then see goal 1.
 
-In order to build its output automapper looks through available providers.
-If output type matches one of types of available providers then it will be
-used directly (but if provider requires more inputs resolution will continue
-recursively).
+## Mapping
 
-## Examples
+At the core there are two main object types - *requests* and *providers*.
 
-```go
-package example
+*Request* is a simple name-type pair which represents need for some value
+of a given name and type (actually name can be empty, indicating only
+type matching is needed).
 
-type A struct {
-	X string
-}
+*Providers* are things that can fulfill requests. Examples are mapper
+arguments and other mappers - either specified explicitly in a config or
+created implicitly to do automatic type conversions. Providers can have
+child providers, forming a provider tree. Also, providers can have
+dependencies, which are requests that needs to be fulfilled.
 
-type B struct {
-	X string
-}
+For any given request resolution algorithm is following:
+1. Traverse provider tree using breadth-first search to find first matching 
+   provider
+2. If matching provider doesn't have dependencies we're done
+3. Otherwise try to recursively resolve all the dependencies using same 
+   algorithm
+4. If all dependencies are resolved we are done
+5. Otherwise we consider this provider as non-matching and go back to step 1 
+   to search for another provider.
+6. If root request couldn't be resolved we are failed
 
-func MapperFromA(a A) B {
-	return B{X: a.X}
-}
-
-func MapperFromStr(x string) B {
-	return B{X: x}
-}
-
-func MapperWithConstructor(a A) B {
-    return MapperFromStr(a.X)	
-}
-```
-
-Resolution for `MapperFromA`:
-* required result: B
-* available providers:
-  * name: "a", type: "A"
-  * name: "a.X", type: "string"
-* there is no provider that returns type B, so struct mapper will be created
-  * mapper result: B
-  * mapper requirements: name "X", type "string"
-* now graph is B <- structMapperB(X string) <- ???
-* resolver starts looking for X string, and finds it as an a.X, since it 
-  matches name after removing prefix and matches type
-* finally graph is B <- structMapperB(X string) <- a.X
-
-Resolution for `MapperFromStr`:
-* required result: B
-* available providers:
-  * name: "x", type: "string"
-* there is no provider that returns type B, so struct mapper will be created
-  * mapper result: B
-  * mapper requirements: name "X", type "string"
-* now graph is B <- structMapperB(X string) <- ???
-* resolver starts looking for X string, and finds it as an a.X, since it
-  matches name (matching is case insensitive) and type
-* finally graph is B <- structMapperB(X string) <- x
-
-Resolution for `MapperWithConstructor`:
-* required result: B
-* available providers:
-  * name: "a", type: "A"
-  * name: "a.X", type: "string"
-  * name: "", type: "B" (with requirement of "x string")
-* since there is already a provider that returns type B and there is no
-  requirement on output name it matched
-* no graph is B <- MapperFromStr(x string) <- ???
-* resolver starts looking for x string, and finds it as an a.X, since it
-  matches name after removing prefix and matches type
-* finally graph is B <- MapperFromStr(x string) <- a.X
