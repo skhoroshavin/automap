@@ -1,13 +1,15 @@
-package mapper
+package provider
+
+import (
+	"github.com/skhoroshavin/automap/internal/mapper/types"
+)
 
 type Request struct {
 	Name string
-	Type *Type
+	Type *types.Type
 }
 
-func (r *Request) TypeCasts() (res ProviderList) {
-	res = ProviderList{}
-
+func (r *Request) TypeCasts() (res List) {
 	if r.Type.IsPointer {
 		// Add deref provider
 	} else {
@@ -18,5 +20,5 @@ func (r *Request) TypeCasts() (res ProviderList) {
 		// Add struct builder provider
 	}
 
-	return res
+	return
 }

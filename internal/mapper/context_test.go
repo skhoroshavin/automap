@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"github.com/skhoroshavin/automap/internal/mapper/provider"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -16,30 +17,28 @@ type ContextSuite struct {
 
 func (s *ContextSuite) SetupSuite() {
 	s.context = new(Context)
-	s.context.AddProvider(&MockProvider{name: "x"})
-	s.context.AddProvider(&MockProvider{name: "y", children: ProviderList{
-		&MockProvider{name: "z"},
-	}})
+	s.context.AddProvider(provider.NewMock("x"))
+	s.context.AddProvider(provider.NewMock("y", provider.NewMock("z")))
 }
 
 func (s *ContextSuite) TestResolveForEmptyContextFails() {
-	_, err := new(Context).Resolve(Request{Name: "x", Type: &Type{Name: "string"}})
+	_, err := new(Context).Resolve(provider.NewMockRequest("x"))
 	s.Require().Error(err)
 }
 
 func (s *ContextSuite) TestResolveForExistingProviderSucceeds() {
-	node, err := s.context.Resolve(Request{Name: "x", Type: &Type{Name: "string"}})
+	node, err := s.context.Resolve(provider.NewMockRequest("x"))
 	s.Require().NoError(err)
 	s.Require().NotNil(node)
 }
 
 func (s *ContextSuite) TestResolveForNonExistingProviderFails() {
-	_, err := s.context.Resolve(Request{Name: "a", Type: &Type{Name: "string"}})
+	_, err := s.context.Resolve(provider.NewMockRequest("a"))
 	s.Require().Error(err)
 }
 
 func (s *ContextSuite) TestResolveForNestedProviderSucceeds() {
-	node, err := s.context.Resolve(Request{Name: "z", Type: &Type{Name: "string"}})
+	node, err := s.context.Resolve(provider.NewMockRequest("z"))
 	s.Require().NoError(err)
 	s.Require().NotNil(node)
 }

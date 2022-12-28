@@ -1,4 +1,4 @@
-package mapper
+package types
 
 import "strings"
 
@@ -30,18 +30,4 @@ func (t *Type) ID() string {
 	}
 	s.WriteString(t.Name)
 	return s.String()
-}
-
-// Var represents name-type pair, which can be variable, field or argument
-type Var struct {
-	Name string
-	Type *Type
-}
-
-// Func represents function or method signature
-type Func struct {
-	Name    string
-	Args    []Var
-	Result  *Type
-	CanFail bool
 }

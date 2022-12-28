@@ -3,23 +3,24 @@ package mapper
 import (
 	"fmt"
 	"github.com/skhoroshavin/automap/internal/mapper/node"
+	"github.com/skhoroshavin/automap/internal/mapper/provider"
 )
 
 // Context represents mapping context
 type Context struct {
-	providers ProviderList
+	providers provider.List
 }
 
 // AddProvider adds provider to the list of available providers
-func (c *Context) AddProvider(p Provider) {
+func (c *Context) AddProvider(p provider.Provider) {
 	c.providers = append(c.providers, p)
 }
 
 // Resolve tries to resolve given Request into node tree
-func (c *Context) Resolve(req Request) (res node.Node, err error) {
+func (c *Context) Resolve(req *provider.Request) (res node.Node, err error) {
 	providers := append(c.providers, req.TypeCasts()...)
-	providers.ForEach(func(p Provider) bool {
-		if !p.Match(req) {
+	providers.ForEach(func(p provider.Provider) bool {
+		if !p.Signature().Match(req) {
 			return false
 		}
 
@@ -37,12 +38,7 @@ func (c *Context) Resolve(req Request) (res node.Node, err error) {
 	return
 }
 
-func (c *Context) typeCasts(req Request) ProviderList {
-	// TODO: Return providers for implicit type casts
-	return ProviderList{}
-}
-
-func (c *Context) compile(p Provider) (res node.Node, err error) {
+func (c *Context) compile(p provider.Provider) (res node.Node, err error) {
 	if p == nil {
 		return nil, nil
 	}
@@ -54,7 +50,7 @@ func (c *Context) compile(p Provider) (res node.Node, err error) {
 
 	deps := make([]node.Node, len(p.Dependencies()))
 	for i, dep := range p.Dependencies() {
-		deps[i], err = c.Resolve(dep)
+		deps[i], err = c.Resolve(&dep)
 		if err != nil {
 			return
 		}
