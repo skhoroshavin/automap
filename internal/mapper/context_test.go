@@ -23,23 +23,23 @@ func (s *ContextSuite) SetupSuite() {
 }
 
 func (s *ContextSuite) TestResolveForEmptyContextFails() {
-	_, err := new(Context).Resolve(Request{Name: "x", Type: &MockType{id: "string"}})
+	_, err := new(Context).Resolve(Request{Name: "x", Type: &Type{Name: "string"}})
 	s.Require().Error(err)
 }
 
 func (s *ContextSuite) TestResolveForExistingProviderSucceeds() {
-	node, err := s.context.Resolve(Request{Name: "x", Type: &MockType{id: "string"}})
+	node, err := s.context.Resolve(Request{Name: "x", Type: &Type{Name: "string"}})
 	s.Require().NoError(err)
 	s.Require().NotNil(node)
 }
 
 func (s *ContextSuite) TestResolveForNonExistingProviderFails() {
-	_, err := s.context.Resolve(Request{Name: "a", Type: &MockType{id: "string"}})
+	_, err := s.context.Resolve(Request{Name: "a", Type: &Type{Name: "string"}})
 	s.Require().Error(err)
 }
 
 func (s *ContextSuite) TestResolveForNestedProviderSucceeds() {
-	node, err := s.context.Resolve(Request{Name: "z", Type: &MockType{id: "string"}})
+	node, err := s.context.Resolve(Request{Name: "z", Type: &Type{Name: "string"}})
 	s.Require().NoError(err)
 	s.Require().NotNil(node)
 }
