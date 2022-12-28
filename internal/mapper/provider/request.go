@@ -39,7 +39,7 @@ func (r *Request) TypeCasts() (res List) {
 	}
 
 	if r.Type.IsStruct {
-		// Add struct builder provider
+		res = append(res, NewStruct(r.Name, r.Type))
 	}
 
 	return
