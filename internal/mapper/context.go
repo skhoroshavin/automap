@@ -17,9 +17,8 @@ func (c *Context) AddProvider(p Provider) {
 
 // Resolve tries to resolve given Request into node tree
 func (c *Context) Resolve(req Request) (res node.Node, err error) {
-	// TODO: Add implicit resolvers for request type
-
-	c.providers.ForEach(func(p Provider) bool {
+	providers := append(c.providers, req.TypeCasts()...)
+	providers.ForEach(func(p Provider) bool {
 		if !p.Match(req) {
 			return false
 		}
@@ -33,9 +32,14 @@ func (c *Context) Resolve(req Request) (res node.Node, err error) {
 	})
 
 	if res == nil && err == nil {
-		err = fmt.Errorf("failed to resolve request %s %s", req.Name, req.TypeID)
+		err = fmt.Errorf("failed to resolve request %s %s", req.Name, req.Type.ID())
 	}
 	return
+}
+
+func (c *Context) typeCasts(req Request) ProviderList {
+	// TODO: Return providers for implicit type casts
+	return ProviderList{}
 }
 
 func (c *Context) compile(p Provider) (res node.Node, err error) {
