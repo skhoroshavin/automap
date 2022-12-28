@@ -42,7 +42,7 @@ For any given request resolution algorithm is following:
 6. If root request couldn't be resolved we are failed
 
 
-## Examples
+## Mapping example
 
 ```go
 type Source struct {
@@ -73,6 +73,7 @@ func Mapper(src Source) Dest {
 ```
 
 Root request: "_ Dest"
+
 Main provider resolution sequence:
 * "src Source"
 * "srcX int"
@@ -95,3 +96,35 @@ it also contains composite type, so another matching provider is generated:
 * "Y InnerDest" <- "YZ int", "YB int"
 
 "X int", "YA int", "YB int" and "YZ int" are resolved through main sequence
+
+## DI example
+
+```go
+func NewLogger() *Logger {}
+
+func NewRepository(logger *Logger) *Repo {}
+
+func NewService(repo *Repository, logger *Logger) *Service {}
+
+func NewController(service *Service, logger *Logger) *Controller {}
+
+func BuildController() *Controller {
+	panic(automap.Build(
+		automap.Provider(NewLogger),
+		automap.Provider(NewRepository),
+		automap.Provider(NewService),
+		automap.Provider(NewController), 
+	))
+}
+```
+
+Root request: "_ *Controller"
+
+Main provider resolution sequence:
+* "_ *Logger"
+* "_ *Repository" <- "logger *Logger"
+* "_ *Service" <- "repo *Repository", "logger *Logger"
+* "_ *Controller" <- "service *Service", "logger *Logger"
+
+Full resolution chain happens successfully because unnamed providers
+don't require name matching.
