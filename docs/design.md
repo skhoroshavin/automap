@@ -41,3 +41,57 @@ For any given request resolution algorithm is following:
    to search for another provider.
 6. If root request couldn't be resolved we are failed
 
+
+## Examples
+
+```go
+type Source struct {
+	X int
+	Y InnerSource
+	YB int
+}
+
+type InnerSource struct {
+	Z int
+	A int
+}
+
+type Dest struct {
+	X int
+	Y InnerDest
+	YA int
+}
+
+type InnerDest struct {
+	Z int
+	B int
+}
+
+func Mapper(src Source) Dest {
+	panic(automap.Build())
+} 
+```
+
+Root request: "_ Dest"
+Main provider resolution sequence:
+* "src Source"
+* "srcX int"
+* "srcY InnerSource"
+* "srcYB int"
+* "X int"
+* "Y InnerSource"
+* "YB int"
+* "srcYZ int"
+* "srcYA int"
+* "YZ int"
+* "YA int"
+
+Root request fails to resolve through main sequence, however it
+contains composite type, for which matching provider is generated:
+* "_ Dest" <- "X int", "Y InnerDest", "YA int"
+
+"Y InnerDest" also fails to resolve through main sequence, however
+it also contains composite type, so another matching provider is generated:
+* "Y InnerDest" <- "YZ int", "YB int"
+
+"X int", "YA int", "YB int" and "YZ int" are resolved through main sequence
