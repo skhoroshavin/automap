@@ -2,7 +2,6 @@ package provider
 
 import (
 	"github.com/skhoroshavin/automap/internal/mapper/node"
-	"github.com/skhoroshavin/automap/internal/mapper/types"
 )
 
 // Provider represents single provider
@@ -15,28 +14,6 @@ type Provider interface {
 	Dependencies() []Request
 
 	Map(node.Node, []node.Node) node.Node
-}
-
-type VarProvider struct {
-	name  string
-	value string
-	typ   types.Type
-
-	children []Provider
-}
-
-type FieldProvider struct {
-	name  string
-	value string
-	typ   types.Type
-
-	children []Provider
-}
-
-type MethodProvider struct {
-	name  string
-	value string
-	deps  []Request
 }
 
 // Nodes
