@@ -6,14 +6,14 @@ import (
 	"strings"
 )
 
-type Provider struct {
+type OldProvider struct {
 	Name string
-	Type Type
+	Type OldType
 }
 
-type ProviderList []Provider
+type OldProviderList []OldProvider
 
-func (l ProviderList) FindAccessor(name string, typeName string, isGetter bool) string {
+func (l OldProviderList) FindAccessor(name string, typeName string, isGetter bool) string {
 	for _, p := range l {
 		accessor := p.Name
 		if isGetter {
@@ -46,11 +46,11 @@ func (l ProviderList) FindAccessor(name string, typeName string, isGetter bool) 
 	return ""
 }
 
-type Type interface {
+type OldType interface {
 	Name() string
 	IsPointer() bool // TODO: Remove
 	FindAccessor(name string, typeName string) string
-	BuildMapper(args ProviderList) (node.Node, error)
+	BuildMapper(args OldProviderList) (node.Node, error)
 }
 
 type OpaqueType struct {
@@ -69,7 +69,7 @@ func (t *OpaqueType) FindAccessor(name string, typeName string) string {
 	return ""
 }
 
-func (t *OpaqueType) BuildMapper(args ProviderList) (node.Node, error) {
+func (t *OpaqueType) BuildMapper(args OldProviderList) (node.Node, error) {
 	accessor := args.FindAccessor("", t.Name_, false)
 	if accessor != "" {
 		return node.NewValue(accessor), nil
@@ -81,8 +81,8 @@ func (t *OpaqueType) BuildMapper(args ProviderList) (node.Node, error) {
 type StructType struct {
 	Name_      string
 	IsPointer_ bool
-	Fields     ProviderList
-	Getters    ProviderList
+	Fields     OldProviderList
+	Getters    OldProviderList
 }
 
 func (t *StructType) Name() string {
@@ -107,7 +107,7 @@ func (t *StructType) FindAccessor(name string, typeName string) string {
 	return ""
 }
 
-func (t *StructType) BuildMapper(args ProviderList) (node.Node, error) {
+func (t *StructType) BuildMapper(args OldProviderList) (node.Node, error) {
 	accessor := args.FindAccessor("", t.Name_, false)
 	if accessor != "" {
 		return node.NewValue(accessor), nil

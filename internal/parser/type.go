@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error) {
+func parseType(t types.Type, pkg *Package, imports Imports) (mapper.OldType, error) {
 	isPointer := false
 	if ptr, ok := t.(*types.Pointer); ok {
 		isPointer = true
@@ -33,8 +33,8 @@ func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error)
 	res := &mapper.StructType{
 		Name_:      name,
 		IsPointer_: isPointer,
-		Fields:     make(mapper.ProviderList, 0, structType.NumFields()),
-		Getters:    make(mapper.ProviderList, 0, namedType.NumMethods()),
+		Fields:     make(mapper.OldProviderList, 0, structType.NumFields()),
+		Getters:    make(mapper.OldProviderList, 0, namedType.NumMethods()),
 	}
 	for i := 0; i != structType.NumFields(); i++ {
 		field := structType.Field(i)
@@ -46,7 +46,7 @@ func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error)
 			return nil, err
 		}
 
-		res.Fields = append(res.Fields, mapper.Provider{
+		res.Fields = append(res.Fields, mapper.OldProvider{
 			Name: field.Name(),
 			Type: typ,
 		})
@@ -69,7 +69,7 @@ func parseType(t types.Type, pkg *Package, imports Imports) (mapper.Type, error)
 			return nil, err
 		}
 
-		res.Getters = append(res.Getters, mapper.Provider{
+		res.Getters = append(res.Getters, mapper.OldProvider{
 			Name: method.Name(),
 			Type: typ,
 		})

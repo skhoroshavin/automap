@@ -9,12 +9,12 @@ import (
 type Config struct {
 	Name     string
 	FromName string
-	FromType Type
-	ToType   Type
+	FromType OldType
+	ToType   OldType
 }
 
 func Build(cfg *Config) (*ast.Mapper, error) {
-	node, err := cfg.ToType.BuildMapper(ProviderList{
+	node, err := cfg.ToType.BuildMapper(OldProviderList{
 		{Name: cfg.FromName, Type: cfg.FromType},
 	})
 	if err != nil {

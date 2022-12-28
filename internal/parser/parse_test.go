@@ -61,7 +61,7 @@ func (s *ParseSuite) TestUserType() {
 	user, ok := m.FromType.(*mapper.StructType)
 	s.Require().True(ok)
 
-	userFields := lo.Map(user.Fields, func(p mapper.Provider, _ int) string {
+	userFields := lo.Map(user.Fields, func(p mapper.OldProvider, _ int) string {
 		return fmt.Sprintf("%s %s", p.Name, p.Type.Name())
 	})
 	s.Assert().Equal([]string{

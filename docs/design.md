@@ -42,7 +42,9 @@ For any given request resolution algorithm is following:
 6. If root request couldn't be resolved we are failed
 
 
-## Mapping example
+## Examples
+
+### Mapping 
 
 ```go
 type Source struct {
@@ -97,7 +99,7 @@ it also contains composite type, so another matching provider is generated:
 
 "X int", "YA int", "YB int" and "YZ int" are resolved through main sequence
 
-## DI example
+### Dependency injection
 
 ```go
 func NewLogger() *Logger {}
