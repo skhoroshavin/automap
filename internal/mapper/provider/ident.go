@@ -8,7 +8,7 @@ import (
 func NewIdent(name string, typ *types.Type) *Ident {
 	return &Ident{
 		sig: Signature{
-			Name: name,
+			Name: Matcher{name},
 			Type: typ,
 		},
 		name: name,

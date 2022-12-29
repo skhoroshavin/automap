@@ -26,7 +26,7 @@ type Mock struct {
 
 func (m *Mock) Signature() *Signature {
 	return &Signature{
-		Name: m.name,
+		Name: Matcher{m.name},
 		Type: &types.Type{Name: "Mock"},
 	}
 }

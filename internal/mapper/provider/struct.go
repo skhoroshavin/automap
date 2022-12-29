@@ -16,7 +16,7 @@ func NewStruct(base string, typ *types.Type) *Struct {
 
 	return &Struct{
 		sig: Signature{
-			Name: base,
+			Name: NewMatcher(base),
 			Type: typ,
 		},
 		deps: deps,

@@ -9,7 +9,7 @@ import (
 func NewField(parent Provider, field *types.Var) *Field {
 	return &Field{
 		sig: Signature{
-			Name: parent.Signature().Name + field.Name,
+			Name: parent.Signature().Name.Append(field.Name, true),
 			Type: field.Type,
 		},
 		parent: parent,

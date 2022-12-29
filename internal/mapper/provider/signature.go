@@ -2,11 +2,10 @@ package provider
 
 import (
 	"github.com/skhoroshavin/automap/internal/mapper/types"
-	"strings"
 )
 
 type Signature struct {
-	Name string
+	Name Matcher
 	Type *types.Type
 }
 
@@ -15,11 +14,7 @@ func (s *Signature) Match(req *Request) bool {
 		return false
 	}
 
-	if (req.Name == "") || (s.Name == "") {
-		return true
-	}
-
-	return strings.ToLower(req.Name) == strings.ToLower(s.Name)
+	return s.Name.Match(req.Name)
 }
 
 func (s *Signature) Unpack(parent Provider) (res List) {

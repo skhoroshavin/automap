@@ -10,14 +10,15 @@ func NewMethod(parent Provider, method *types.Func) *Method {
 	deps := make([]Request, len(method.Args))
 	for i, arg := range method.Args {
 		deps[i] = Request{
-			Name: parent.Signature().Name + arg.Name,
+			// TODO: Think of a better way
+			Name: parent.Signature().Name[0] + arg.Name,
 			Type: arg.Type,
 		}
 	}
 
 	return &Method{
 		sig: Signature{
-			Name: parent.Signature().Name + method.Name,
+			Name: parent.Signature().Name.Append(method.Name, true),
 			Type: method.ReturnType,
 		},
 		parent: parent,
