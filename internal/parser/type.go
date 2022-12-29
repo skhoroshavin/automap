@@ -2,77 +2,76 @@ package parser
 
 import (
 	"fmt"
-	"github.com/skhoroshavin/automap/internal/mapper"
-	"go/types"
+	"github.com/skhoroshavin/automap/internal/mapper/types"
+	gotypes "go/types"
 	"strings"
 )
 
-func parseType(t types.Type, pkg *Package, imports Imports) (mapper.OldType, error) {
-	isPointer := false
-	if ptr, ok := t.(*types.Pointer); ok {
-		isPointer = true
+func parseType(t gotypes.Type, pkg *Package, imports Imports) (res *types.Type, err error) {
+	res = new(types.Type)
+
+	if ptr, ok := t.(*gotypes.Pointer); ok {
+		res.IsPointer = true
 		t = ptr.Elem()
 	}
 
-	name, err := parseTypeName(t.String(), pkg, imports)
+	// TODO: Properly parse scope
+	res.Name, err = parseTypeName(t.String(), pkg, imports)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	var ok bool
-	namedType, ok := t.(*types.Named)
+	namedType, ok := t.(*gotypes.Named)
 	if !ok {
-		return &mapper.OpaqueType{Name_: name}, nil
+		return
 	}
-
-	structType, ok := namedType.Underlying().(*types.Struct)
-	if !ok {
-		return &mapper.OpaqueType{Name_: name}, nil
-	}
-
-	res := &mapper.StructType{
-		Name_:      name,
-		IsPointer_: isPointer,
-		Fields:     make(mapper.OldProviderList, 0, structType.NumFields()),
-		Getters:    make(mapper.OldProviderList, 0, namedType.NumMethods()),
-	}
-	for i := 0; i != structType.NumFields(); i++ {
-		field := structType.Field(i)
-		if !field.Exported() {
+	for i := 0; i != namedType.NumMethods(); i++ {
+		gomethod := namedType.Method(i)
+		sig, ok := gomethod.Type().(*gotypes.Signature)
+		if !ok {
 			continue
 		}
-		typ, err := parseType(field.Type(), pkg, imports)
-		if err != nil {
-			return nil, err
-		}
 
-		res.Fields = append(res.Fields, mapper.OldProvider{
-			Name: field.Name(),
-			Type: typ,
-		})
-	}
-
-	for i := 0; i != namedType.NumMethods(); i++ {
-		method := namedType.Method(i)
-		sig, ok := method.Type().(*types.Signature)
-		if !ok {
+		if sig.Params().Len() != 0 {
 			continue
 		}
 		if sig.Results().Len() != 1 {
 			continue
 		}
-		if sig.Params().Len() != 0 {
-			continue
+
+		method := types.Func{
+			Name: gomethod.Name(),
 		}
-		typ, err := parseType(sig.Results().At(0).Type(), pkg, imports)
+		method.ReturnType, err = parseType(sig.Results().At(0).Type(), pkg, imports)
 		if err != nil {
-			return nil, err
+			return
 		}
 
-		res.Getters = append(res.Getters, mapper.OldProvider{
-			Name: method.Name(),
-			Type: typ,
-		})
+		res.Methods = append(res.Methods, method)
+	}
+
+	structType, ok := namedType.Underlying().(*gotypes.Struct)
+	if !ok {
+		return
+	}
+	res.IsStruct = true
+	for i := 0; i != structType.NumFields(); i++ {
+		gofield := structType.Field(i)
+		if !gofield.Exported() {
+			res.IsStruct = false
+			continue
+		}
+
+		field := types.Var{
+			Name: gofield.Name(),
+		}
+		field.Type, err = parseType(gofield.Type(), pkg, imports)
+		if err != nil {
+			return
+		}
+
+		res.Fields = append(res.Fields, field)
 	}
 
 	return res, nil
