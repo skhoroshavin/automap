@@ -3,22 +3,25 @@ package mapper
 import (
 	"fmt"
 	"github.com/skhoroshavin/automap/internal/mapper/ast"
+	"github.com/skhoroshavin/automap/internal/mapper/provider"
+	"github.com/skhoroshavin/automap/internal/mapper/types"
 )
 
 // TODO: Make more generic
 type Config struct {
 	Name     string
 	FromName string
-	FromType Type
-	ToType   Type
+	FromType *types.Type
+	ToType   *types.Type
 }
 
 func Build(cfg *Config) (*ast.Mapper, error) {
-	node, err := cfg.ToType.BuildMapper(ProviderList{
-		{Name: cfg.FromName, Type: cfg.FromType},
+	request := provider.Request{Type: cfg.ToType}
+	node, err := request.Resolve(provider.List{
+		provider.NewIdent(cfg.FromName, cfg.FromType),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to map from %s to %s: %w", cfg.FromType.Name(), cfg.ToType.Name(), err)
+		return nil, fmt.Errorf("failed to map from %s to %s: %w", cfg.FromType.Name, cfg.ToType.Name, err)
 	}
 
 	mapper := &ast.Mapper{
@@ -26,10 +29,10 @@ func Build(cfg *Config) (*ast.Mapper, error) {
 			"func %s(%s %s%s) %s%s",
 			cfg.Name,
 			cfg.FromName,
-			ptr("*", cfg.FromType.IsPointer()),
-			cfg.FromType.Name(),
-			ptr("*", cfg.ToType.IsPointer()),
-			cfg.ToType.Name(),
+			ptr("*", cfg.FromType.IsPointer),
+			cfg.FromType.Name,
+			ptr("*", cfg.ToType.IsPointer),
+			cfg.ToType.Name,
 		),
 	}
 	node.CompileTo(mapper)

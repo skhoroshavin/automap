@@ -8,10 +8,10 @@ NOT SUITABLE FOR USE IN PRODUCTION**
 Automap is a code generation tool that automates creation of mappings between
 different types. Resulting code operates without any additional runtime or
 reflection, so it doesn't incur any runtime overhead compared to handwritten
-mappings. Most of problems with generating mappings will happen at compile
-time, unlike other automapping solutions based on reflection that tend to fail
-at runtime. Finally, generated mappings are susceptible to code analysis tools
-and can also be easily navigated manually.
+mappings. Also, if automap is not able to generate some mapping then it will
+be a compile-time failure, unlike many reflection-based automapping solutions
+which tend to fail during runtime. Finally, generated mappings are susceptible
+to code analysis tools and can also be easily navigated manually.
 
 This tool is heavily inspired by:
 * [Wire](https://github.com/google/wire):
@@ -24,7 +24,7 @@ This tool is heavily inspired by:
 Install AutoMap by running:
 
 ```
-go get github.com/skhoroshavin/automap/cmd/automap
+go install github.com/skhoroshavin/automap/cmd/automap@latest
 ```
 
 and ensuring that `$GOPATH/bin` is added to your `$PATH`.

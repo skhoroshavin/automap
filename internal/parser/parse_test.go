@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/samber/lo"
 	"github.com/skhoroshavin/automap/internal/mapper"
+	"github.com/skhoroshavin/automap/internal/mapper/types"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -47,22 +48,21 @@ func (s *ParseSuite) TestMapperSignature() {
 	s.Require().True(ok)
 
 	s.Assert().Equal("user", m.FromName)
-	s.Assert().Equal("another.User", m.FromType.Name())
-	s.Assert().False(m.FromType.IsPointer())
-	s.Assert().Equal("UserName", m.ToType.Name())
-	s.Assert().True(m.ToType.IsPointer())
+	s.Assert().Equal("another.User", m.FromType.Name)
+	s.Assert().False(m.FromType.IsPointer)
+	s.Assert().Equal("UserName", m.ToType.Name)
+	s.Assert().True(m.ToType.IsPointer)
 }
 
 func (s *ParseSuite) TestUserType() {
 	m, ok := lo.Find(s.cfg.Mappers, func(m *mapper.Config) bool { return m.Name == "ValueToPtr" })
 	s.Require().True(ok)
 
-	s.Require().Equal("another.User", m.FromType.Name())
-	user, ok := m.FromType.(*mapper.StructType)
-	s.Require().True(ok)
+	s.Require().Equal("another.User", m.FromType.Name)
+	s.Require().True(m.FromType.IsStruct)
 
-	userFields := lo.Map(user.Fields, func(p mapper.Provider, _ int) string {
-		return fmt.Sprintf("%s %s", p.Name, p.Type.Name())
+	userFields := lo.Map(m.FromType.Fields, func(f types.Var, _ int) string {
+		return fmt.Sprintf("%s %s", f.Name, f.Type.Name)
 	})
 	s.Assert().Equal([]string{
 		"ID string",
